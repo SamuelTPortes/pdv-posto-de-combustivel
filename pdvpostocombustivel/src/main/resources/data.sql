@@ -1,12 +1,10 @@
-spring.application.name=pdvpostocombustivel
-
-# Configuração PostgreSQL
+# ConfiguraÃ§Ã£o PostgreSQL
 spring.datasource.url=jdbc:postgresql://localhost:5432/pdv_posto
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-# Configuração JPA/Hibernate
+# ConfiguraÃ§Ã£o JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.open-in-view=false
 spring.jpa.show-sql=true
