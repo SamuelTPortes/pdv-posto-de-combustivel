@@ -1,11 +1,10 @@
-package com.br.pdvpostocombustivel.domain.dto;
+package com.br.pdvpostocombustivel.api.pessoa.dto;
 
 import java.time.LocalDate;
 //Para resposta
 
 
 public record PessoaResponse(
-        Long id,
         String nomeCompleto,
         String cpfCnpj,
         Long numeroCtps,

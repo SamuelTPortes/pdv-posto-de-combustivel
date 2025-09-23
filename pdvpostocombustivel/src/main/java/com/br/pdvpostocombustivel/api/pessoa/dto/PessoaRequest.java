@@ -1,4 +1,4 @@
-package com.br.pdvpostocombustivel.domain.dto;
+package com.br.pdvpostocombustivel.api.pessoa.dto;
 
 import com.br.pdvpostocombustivel.enums.TipoPessoa;
 import org.springframework.format.annotation.DateTimeFormat;
