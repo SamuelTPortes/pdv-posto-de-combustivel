@@ -1,8 +1,14 @@
 package com.br.pdvpostocombustivel.domain.entity;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 public class Custo {
 
-    // atributos
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private double imposto;
     private double frete;
@@ -11,8 +17,7 @@ public class Custo {
     private double custoFixo;
     private double margemLucro;
 
-
-    // construtor
+    protected Custo() {}
 
     public Custo(double imposto, double frete, double seguro, double custoVariavel, double custoFixo, double margemLucro) {
         this.imposto = imposto;
@@ -24,7 +29,6 @@ public class Custo {
     }
 
 
-    // getters
 
     public double getImposto() {
         return imposto;
@@ -50,8 +54,13 @@ public class Custo {
         return margemLucro;
     }
 
+    public Long getId() {
+        return id;
+    }
 
-    // setters
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public void setImposto(double imposto) {
         this.imposto = imposto;

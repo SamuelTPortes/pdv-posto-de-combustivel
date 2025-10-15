@@ -1,6 +1,5 @@
 -- Inserindo alguns registros iniciais
 
-
 INSERT INTO pessoas (nome_completo, cpf_cnpj, numero_ctps, data_nascimento, tipo_pessoa)
 VALUES ('Maria da Silva', '12345678901', 12345, '1990-05-10', 'FISICA')
     ON CONFLICT (cpf_cnpj) DO NOTHING;

@@ -71,7 +71,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
         <!-- Swagger UI / OpenAPI para Spring Boot 3 -->
         <dependency>
             <groupId>org.springdoc</groupId>

@@ -2,10 +2,15 @@ package com.br.pdvpostocombustivel.domain.entity;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 
 public class Estoque {
 
-    // atributos
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private BigDecimal quantidade;
     private String localTanque;
@@ -13,8 +18,7 @@ public class Estoque {
     private String localFabricacao;
     private Date dataValidade;
 
-
-    // construtor
+    protected Estoque() {}
 
     public Estoque(BigDecimal quantidade, String localTanque, String localEndereco, String localFabricacao, Date dataValidade) {
         this.quantidade = quantidade;
@@ -23,9 +27,6 @@ public class Estoque {
         this.localFabricacao = localFabricacao;
         this.dataValidade = dataValidade;
     }
-
-
-    // getters
 
     public BigDecimal getQuantidade() {
         return quantidade;
@@ -47,8 +48,13 @@ public class Estoque {
         return dataValidade;
     }
 
+    public Long getId() {
+        return id;
+    }
 
-    // setters
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public void setQuantidade(BigDecimal quantidade) {
         this.quantidade = quantidade;
