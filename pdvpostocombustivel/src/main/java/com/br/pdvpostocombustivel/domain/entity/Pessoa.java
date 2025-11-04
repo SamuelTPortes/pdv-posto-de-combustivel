@@ -1,6 +1,7 @@
 package com.br.pdvpostocombustivel.domain.entity; //Pacote que a classe vai receber
 import com.br.pdvpostocombustivel.enums.TipoPessoa;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ public class Pessoa{
     @Column(name = "numero_ctps",length = 12)
     private Long numeroCtps;
 
+    @NotNull
     @Enumerated(EnumType.STRING) //Tipo enum
     @Column(name = "tipo_pessoa", length = 15, nullable = false)
     private TipoPessoa tipoPessoa;
@@ -68,6 +70,14 @@ public class Pessoa{
 
     public Long getNumeroCtps(){
         return numeroCtps;
+    }
+
+    public TipoPessoa getTipoPessoa() {
+        return tipoPessoa;
+    }
+
+    public void setTipoPessoa(TipoPessoa tipoPessoa) {
+        this.tipoPessoa = tipoPessoa;
     }
 
     //setters

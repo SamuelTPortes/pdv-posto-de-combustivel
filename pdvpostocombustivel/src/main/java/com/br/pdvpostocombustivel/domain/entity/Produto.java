@@ -1,5 +1,8 @@
 package com.br.pdvpostocombustivel.domain.entity;
 
+import com.br.pdvpostocombustivel.enums.TipoProduto;
+import jakarta.persistence.*;
+
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,18 +13,29 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 10, nullable = false)
     private String nome;
+
+    @Column(length = 10, nullable = false)
     private String referencia;
+
+    @Column(length = 10, nullable = false)
     private String fornecedor;
+
+    @Column(length = 10, nullable = false)
     private String marca;
+
+    @Column(length = 10, nullable = false)
+    private TipoProduto tipoProduto;
 
     protected Produto() {}
 
-    public Produto(String nome, String referencia, String fornecedor, String marca) {
+    public Produto(String nome, String referencia, String fornecedor, String marca, TipoProduto tipoProduto) {
         this.nome = nome;
         this.referencia = referencia;
         this.fornecedor = fornecedor;
         this.marca = marca;
+        this.tipoProduto = tipoProduto;
     }
 
 
@@ -50,6 +64,10 @@ public class Produto {
         this.id = id;
     }
 
+    public TipoProduto getTipoProduto() {
+        return tipoProduto;
+    }
+
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -64,6 +82,10 @@ public class Produto {
 
     public void setMarca(String marca) {
         this.marca = marca;
+    }
+
+    public void setTipoProduto(TipoProduto tipoProduto) {
+        this.tipoProduto = tipoProduto;
     }
 
 

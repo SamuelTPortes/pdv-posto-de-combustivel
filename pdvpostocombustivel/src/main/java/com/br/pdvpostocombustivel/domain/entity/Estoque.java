@@ -1,10 +1,11 @@
 package com.br.pdvpostocombustivel.domain.entity;
 
+import com.br.pdvpostocombustivel.enums.TipoEstoque;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 import java.util.Date;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 public class Estoque {
 
@@ -13,19 +14,32 @@ public class Estoque {
     private Long id;
 
     private BigDecimal quantidade;
+
+    @Column(length = 10, nullable = false)
     private String localTanque;
+
+    @Column(length = 10, nullable = false)
     private String localEndereco;
+
+    @Column(length = 10, nullable = false)
     private String localFabricacao;
+
     private Date dataValidade;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10, nullable = false)
+    private TipoEstoque tipoEstoque;
 
     protected Estoque() {}
 
-    public Estoque(BigDecimal quantidade, String localTanque, String localEndereco, String localFabricacao, Date dataValidade) {
+    public Estoque(BigDecimal quantidade, String localTanque, String localEndereco, String localFabricacao, Date dataValidade, TipoEstoque tipoEstoque) {
         this.quantidade = quantidade;
         this.localTanque = localTanque;
         this.localEndereco = localEndereco;
         this.localFabricacao = localFabricacao;
         this.dataValidade = dataValidade;
+        this.tipoEstoque = tipoEstoque;
     }
 
     public BigDecimal getQuantidade() {
@@ -52,6 +66,11 @@ public class Estoque {
         return id;
     }
 
+    public TipoEstoque getTipoEstoque() {
+        return tipoEstoque;
+    }
+
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -76,5 +95,8 @@ public class Estoque {
         this.dataValidade = dataValidade;
     }
 
+    public void setTipoEstoque(TipoEstoque tipoEstoque) {
+        this.tipoEstoque = tipoEstoque;
+    }
 
 }

@@ -1,26 +1,36 @@
 package com.br.pdvpostocombustivel.domain.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.br.pdvpostocombustivel.enums.TipoAcesso;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
+@Entity
+@Table(name="acessos")
 
 public class Acesso {
 
+    protected Acesso() {}
+
+    public Acesso(String usuario, String senha, TipoAcesso tipoAcesso) {
+        this.usuario = usuario;
+        this.senha = senha;
+        this.tipoAcesso = tipoAcesso;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 10, nullable = false)
     private String usuario;
+
+    @Column(length = 10, nullable = false)
     private String senha;
 
-    protected Acesso() {}
-
-    public Acesso(String usuario, String senha){
-        this.usuario = usuario;
-        this.senha = senha;
-    }
-
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10, nullable = false)
+    private TipoAcesso tipoAcesso;
 
     public String getUsuario() {
         return usuario;
@@ -28,6 +38,14 @@ public class Acesso {
 
     public String getSenha() {
         return senha;
+    }
+
+    public TipoAcesso getTipoAcesso() {
+        return tipoAcesso;
+    }
+
+    public void setTipoAcesso(TipoAcesso tipoAcesso) {
+        this.tipoAcesso = tipoAcesso;
     }
 
     public Long getId() {
