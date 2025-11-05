@@ -12,13 +12,13 @@ public class Contato {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 20, nullable = false)
     private String telefone;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 70, nullable = false)
     private String email;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 70, nullable = false)
     private String endereco;
 
 

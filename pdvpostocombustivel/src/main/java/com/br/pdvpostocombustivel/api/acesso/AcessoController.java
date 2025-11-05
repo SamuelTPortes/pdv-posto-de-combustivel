@@ -1,5 +1,7 @@
 package com.br.pdvpostocombustivel.api.acesso;
 
+import com.br.pdvpostocombustivel.api.acesso.dto.AcessoRequest;
+import com.br.pdvpostocombustivel.api.acesso.dto.AcessoResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -25,11 +27,6 @@ public class AcessoController {
     @GetMapping("/{id}")
     public AcessoResponse get(@PathVariable Long id) {
         return service.getById(id);
-    }
-
-    @GetMapping(params = "cpfCnpj")
-    public AcessoResponse getByCpf(@RequestParam String cpfCnpj) {
-        return service.getByCpfCnpj(cpfCnpj);
     }
 
     @GetMapping

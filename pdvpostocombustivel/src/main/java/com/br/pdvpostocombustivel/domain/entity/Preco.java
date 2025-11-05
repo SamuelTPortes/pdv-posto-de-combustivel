@@ -17,7 +17,7 @@ public class Preco {
     private Date horaAlteracao;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10, nullable = false)
+    @Column(length = 20, nullable = false)
     private TipoPreco tipoPreco;
 
     protected Preco(){}

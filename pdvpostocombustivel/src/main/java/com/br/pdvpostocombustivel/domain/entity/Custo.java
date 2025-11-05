@@ -68,7 +68,6 @@ public class Custo {
     public TipoCusto getTipoCusto() {
         return tipoCusto;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
