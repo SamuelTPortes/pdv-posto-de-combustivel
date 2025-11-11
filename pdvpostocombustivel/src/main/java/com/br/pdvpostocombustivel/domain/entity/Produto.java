@@ -13,19 +13,19 @@ public class Produto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private String nome;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private String referencia;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private String fornecedor;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private String marca;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private TipoProduto tipoProduto;
 
     protected Produto() {}
