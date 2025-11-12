@@ -1,18 +1,3 @@
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
-    }
-}
-    @PutMapping("/{id}")
-    public ContatoResponse update(@PathVariable Long id, @RequestBody ContatoRequest req) {
-        return service.update(id, req);
-    }
-
-    @PatchMapping("/{id}")
-    public ContatoResponse patch(@PathVariable Long id, @RequestBody ContatoRequest req) {
-        return service.patch(id, req);
-    }
 
 package com.br.pdvpostocombustivel.api.contato;
 
@@ -51,5 +36,22 @@ public class ContatoController {
                                       @RequestParam(defaultValue = "ASC") Sort.Direction dir) {
         return service.list(page, size, sortBy, dir);
     }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+
+    @PutMapping("/{id}")
+    public ContatoResponse update(@PathVariable Long id, @RequestBody ContatoRequest req) {
+        return service.update(id, req);
+    }
+
+    @PatchMapping("/{id}")
+    public ContatoResponse patch(@PathVariable Long id, @RequestBody ContatoRequest req) {
+        return service.patch(id, req);
+    }
+
+}
 
 
