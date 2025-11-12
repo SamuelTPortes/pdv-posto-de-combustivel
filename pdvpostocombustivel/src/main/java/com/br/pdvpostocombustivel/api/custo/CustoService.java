@@ -1,48 +1,4 @@
-        if (req.margemLucro() != null) p.setMargemLucro(req.margemLucro());
-        if (req.tipoCusto() != null) p.setTipoCusto(req.tipoCusto());
 
-        return toResponse(repository.save(p));
-    }
-
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new IllegalArgumentException("Custo não encontrado. id=" + id);
-        }
-        repository.deleteById(id);
-    }
-
-    private void validarUnicidadeMargem(Double margem, Long idAtual) {
-        if (margem == null) return;
-        repository.findByMargemLucro(margem).ifPresent(existente -> {
-            if (idAtual == null || !existente.getId().equals(idAtual)) {
-                throw new DataIntegrityViolationException("Margem já cadastrada: " + margem);
-            }
-        });
-    }
-
-    private Custo toEntity(com.br.pdvpostocombustivel.api.custo.dto.CustoRequest req) {
-        return new Custo(
-                req.imposto(),
-                req.frete(),
-                req.seguro(),
-                req.custoVariavel(),
-                req.custoFixo(),
-                req.margemLucro(),
-                req.tipoCusto()
-        );
-    }
-
-    private CustoResponse toResponse(Custo p) {
-        return new CustoResponse(
-                p.getImposto(),
-                p.getFrete(),
-                p.getSeguro(),
-                p.getCustoVariavel(),
-                p.getCustoFixo(),
-                p.getMargemLucro()
-        );
-    }
-}
 package com.br.pdvpostocombustivel.api.custo;
 
 import com.br.pdvpostocombustivel.api.custo.dto.CustoRequest;
@@ -115,3 +71,44 @@ public class CustoService {
         if (req.custoVariavel() != null) p.setCustoVariavel(req.custoVariavel());
         if (req.custoFixo() != null) p.setCustoFixo(req.custoFixo());
 
+        return null;
+    }
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Custo não encontrado. id=" + id);
+        }
+        repository.deleteById(id);
+    }
+
+    private void validarUnicidadeMargem(Double margem, Long idAtual) {
+        if (margem == null) return;
+        repository.findByMargemLucro(margem).ifPresent(existente -> {
+            if (!existente.getId().equals(idAtual)) {
+                throw new DataIntegrityViolationException("Margem já cadastrada: " + margem);
+            }
+        });
+    }
+
+    private Custo toEntity(com.br.pdvpostocombustivel.api.custo.dto.CustoRequest req) {
+        return new Custo(
+                req.imposto(),
+                req.frete(),
+                req.seguro(),
+                req.custoVariavel(),
+                req.custoFixo(),
+                req.margemLucro(),
+                req.tipoCusto()
+        );
+    }
+
+    private CustoResponse toResponse(Custo p) {
+        return new CustoResponse(
+                p.getImposto(),
+                p.getFrete(),
+                p.getSeguro(),
+                p.getCustoVariavel(),
+                p.getCustoFixo(),
+                p.getMargemLucro()
+        );
+    }
+}
