@@ -7,6 +7,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+@Entity
+@Table(name = "produtos")
 public class Produto {
 
     @Id
@@ -25,6 +27,7 @@ public class Produto {
     @Column(length = 30, nullable = false)
     private String marca;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
     private TipoProduto tipoProduto;
 

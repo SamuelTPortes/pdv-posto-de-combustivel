@@ -78,8 +78,8 @@ public class PrecoService {
 
     private void validarUnicidadeValor(java.math.BigDecimal valor, Long idAtual) {
         if (valor == null) return;
-        repository.findByValor(valor.doubleValue()).ifPresent(existente -> {
-            if (idAtual == null || !existente.getId().equals(idAtual)) {
+        repository.findByValor(valor).ifPresent(existente -> {
+            if (!existente.getId().equals(idAtual)) {
                 throw new DataIntegrityViolationException("Valor já cadastrado: " + valor);
             }
         });
@@ -102,4 +102,3 @@ public class PrecoService {
         );
     }
 }
-

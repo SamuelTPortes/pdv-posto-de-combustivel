@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Entity
+@Table(name = "estoques")
 public class Estoque {
 
     @Id

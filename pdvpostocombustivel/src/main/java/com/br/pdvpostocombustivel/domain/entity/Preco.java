@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Entity
+@Table(name = "precos")
 public class Preco {
 
     @Id
