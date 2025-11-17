@@ -116,12 +116,13 @@ public class EstoqueService {
 
     private EstoqueResponse toResponse(Estoque p) {
         return new EstoqueResponse(
+                p.getId(),
                 p.getQuantidade(),
                 p.getLocalTanque(),
                 p.getLocalEndereco(),
                 p.getLocalFabricacao(),
-                p.getDataValidade()
+                p.getDataValidade(),
+                p.getTipoEstoque()
         );
     }
 }
-

@@ -1,4 +1,3 @@
-
 package com.br.pdvpostocombustivelbackend.api.custo;
 
 import com.br.pdvpostocombustivelbackend.api.custo.dto.CustoRequest;
@@ -71,8 +70,11 @@ public class CustoService {
         if (req.custoVariavel() != null) p.setCustoVariavel(req.custoVariavel());
         if (req.custoFixo() != null) p.setCustoFixo(req.custoFixo());
 
-        return null;
+        // persist changes and return response
+        Custo saved = repository.save(p);
+        return toResponse(saved);
     }
+
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Custo não encontrado. id=" + id);
@@ -103,12 +105,14 @@ public class CustoService {
 
     private CustoResponse toResponse(Custo p) {
         return new CustoResponse(
+                p.getId(),
                 p.getImposto(),
                 p.getFrete(),
                 p.getSeguro(),
                 p.getCustoVariavel(),
                 p.getCustoFixo(),
-                p.getMargemLucro()
+                p.getMargemLucro(),
+                p.getTipoCusto()
         );
     }
 }

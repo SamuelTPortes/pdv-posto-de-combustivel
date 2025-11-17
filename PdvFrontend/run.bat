@@ -29,7 +29,7 @@ echo [2/2] Iniciando aplicacao...
 echo.
 java -cp . com.br.pdvpostocombustivelfrontend.frontend.Main
 
-if %errorlevel% neq 0 (
+if %errorlevel% neq 0 (!
     echo.
     echo [ERRO] Falha ao executar a aplicacao!
     pause

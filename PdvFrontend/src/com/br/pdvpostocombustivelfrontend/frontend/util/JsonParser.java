@@ -148,12 +148,15 @@ public class JsonParser {
     public static com.br.pdvpostocombustivelfrontend.frontend.model.Preco parsePreco(String json) {
         try {
             com.br.pdvpostocombustivelfrontend.frontend.model.Preco p = new com.br.pdvpostocombustivelfrontend.frontend.model.Preco();
-            String idStr = extractValue(json, "id");
-            if ((idStr == null || idStr.isEmpty())) {
-                Long idL = extractLongFallback(json, "id"); if (idL != null) p.setId(idL);
-            } else {
-                try { p.setId(Long.parseLong(idStr)); } catch (Exception ex) { Long idL = extractLongFallback(json, "id"); if (idL != null) p.setId(idL); }
+            // try robust id extraction first
+            Long idL = extractLongFallback(json, "id", "precoId", "codigo");
+            if (idL == null) {
+                String idStr = extractValue(json, "id");
+                if (idStr != null && !idStr.isEmpty()) {
+                    try { idL = Long.parseLong(idStr.trim()); } catch (Exception ignored) {}
+                }
             }
+            if (idL != null) p.setId(idL);
 
             p.setValor(extractValue(json, "valor"));
 
@@ -182,7 +185,14 @@ public class JsonParser {
     public static com.br.pdvpostocombustivelfrontend.frontend.model.Estoque parseEstoque(String json) {
         try {
             com.br.pdvpostocombustivelfrontend.frontend.model.Estoque e = new com.br.pdvpostocombustivelfrontend.frontend.model.Estoque();
-            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { e.setId(Long.parseLong(id)); } catch (Exception ex) { Long idL = extractLongFallback(json, "id"); if (idL!=null) e.setId(idL); }
+            Long idL = extractLongFallback(json, "id", "estoqueId", "codigo");
+            if (idL == null) {
+                String id = extractValue(json, "id");
+                if (id != null && !id.isEmpty()) {
+                    try { idL = Long.parseLong(id.trim()); } catch (Exception ignored) {}
+                }
+            }
+            if (idL != null) e.setId(idL);
             e.setQuantidade(extractValue(json, "quantidade"));
             e.setLocalTanque(extractValue(json, "localTanque"));
             e.setLocalEndereco(extractValue(json, "localEndereco"));
@@ -433,7 +443,7 @@ public class JsonParser {
     /**
      * Extrai um número inteiro (Long) de um JSON, tentando várias estratégias.
      */
-    private static Long extractLongFallback(String json, String key, String... altKeys) {
+    public static Long extractLongFallback(String json, String key, String... altKeys) {
         try {
             String v = extractValue(json, key);
             if (v != null && !v.trim().isEmpty()) {
