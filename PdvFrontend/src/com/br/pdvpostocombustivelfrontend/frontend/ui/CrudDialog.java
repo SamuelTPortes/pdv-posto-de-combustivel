@@ -304,6 +304,44 @@ public class CrudDialog {
         return null;
     }
 
+    // ==================== ACESSO (USUARIO) ====================
+
+    /**
+     * Dialog para adicionar/editar acesso (usuário)
+     */
+    public static com.br.pdvpostocombustivelfrontend.frontend.model.Acesso showAcessoDialog(JFrame parent, com.br.pdvpostocombustivelfrontend.frontend.model.Acesso acesso, String title) {
+        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JTextField usuarioField = new JTextField(acesso != null ? acesso.getUsuario() : "");
+        JPasswordField senhaField = new JPasswordField(acesso != null ? (acesso.getSenha() != null ? acesso.getSenha() : "") : "");
+
+        JComboBox<String> tipoCombo = new JComboBox<>(new String[]{"ADMINISTRADOR", "GESTAO", "FUNCIONARIO"});
+        if (acesso != null && acesso.getTipoAcesso() != null) tipoCombo.setSelectedItem(acesso.getTipoAcesso());
+
+        panel.add(new JLabel("Usuário:"));
+        panel.add(usuarioField);
+        panel.add(new JLabel("Senha:"));
+        panel.add(senhaField);
+        panel.add(new JLabel("Tipo Acesso:"));
+        panel.add(tipoCombo);
+        panel.add(new JLabel(""));
+        panel.add(new JLabel(""));
+
+        int result = JOptionPane.showConfirmDialog(parent, panel, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            com.br.pdvpostocombustivelfrontend.frontend.model.Acesso a = new com.br.pdvpostocombustivelfrontend.frontend.model.Acesso();
+            if (acesso != null && acesso.getId() != null) a.setId(acesso.getId());
+            a.setUsuario(usuarioField.getText());
+            a.setSenha(new String(senhaField.getPassword()));
+            a.setTipoAcesso((String) tipoCombo.getSelectedItem());
+            return a;
+        }
+        return null;
+    }
+
     /**
      * Dialog de confirmação para deletar
      */

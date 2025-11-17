@@ -471,4 +471,22 @@ public class JsonParser {
             return null;
         } catch (Exception e) { return null; }
     }
+
+    /**
+     * Converte JSON para Acesso (usuário)
+     */
+    public static com.br.pdvpostocombustivelfrontend.frontend.model.Acesso parseAcesso(String json) {
+        try {
+            com.br.pdvpostocombustivelfrontend.frontend.model.Acesso a = new com.br.pdvpostocombustivelfrontend.frontend.model.Acesso();
+            String id = extractValue(json, "id");
+            if (id != null && !id.isEmpty()) {
+                try { a.setId(Long.parseLong(id)); } catch (Exception ex) { /* ignore */ }
+            }
+            a.setUsuario(extractValue(json, "usuario"));
+            a.setSenha(extractValue(json, "senha"));
+            String tipo = extractValueFallback(json, "tipoAcesso", "tipo_acesso", "tipoAcessoEnum");
+            a.setTipoAcesso(tipo);
+            return a;
+        } catch (Exception e) { return null; }
+    }
 }

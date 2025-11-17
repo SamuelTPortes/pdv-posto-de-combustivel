@@ -4,6 +4,7 @@ import com.br.pdvpostocombustivelfrontend.frontend.config.AppConfig;
 import com.br.pdvpostocombustivelfrontend.frontend.model.LoginResponse;
 import com.br.pdvpostocombustivelfrontend.frontend.service.AuthService;
 import com.br.pdvpostocombustivelfrontend.frontend.ui.MainFrame;
+import com.br.pdvpostocombustivelfrontend.frontend.util.JsonParser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -123,6 +124,16 @@ public class LoginFrame extends JFrame {
         loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         loginButton.addActionListener(e -> performLogin());
 
+        JButton registerButton = new JButton("Registrar");
+        registerButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        registerButton.setBackground(new Color(52, 152, 219));
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFocusPainted(false);
+        registerButton.setBorderPainted(false);
+        registerButton.setPreferredSize(new Dimension(100, 35));
+        registerButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        registerButton.addActionListener(e -> openRegisterDialog());
+
         cancelButton = new JButton("Cancelar");
         cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         cancelButton.setBackground(new Color(231, 76, 60));
@@ -134,6 +145,7 @@ public class LoginFrame extends JFrame {
         cancelButton.addActionListener(e -> System.exit(0));
 
         buttonPanel.add(loginButton);
+        buttonPanel.add(registerButton);
         buttonPanel.add(cancelButton);
 
         // Adicionar componentes ao painel de login
@@ -229,5 +241,41 @@ public class LoginFrame extends JFrame {
             dispose();
         });
     }
-}
 
+    /**
+     * Abre o diálogo de registro de usuário
+     */
+    private void openRegisterDialog() {
+        com.br.pdvpostocombustivelfrontend.frontend.model.Acesso novo = com.br.pdvpostocombustivelfrontend.frontend.ui.CrudDialog.showAcessoDialog(this, null, "Registrar Usuário");
+        if (novo == null) return;
+        // chamar serviço em background
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                try {
+                    return com.br.pdvpostocombustivelfrontend.frontend.service.AcessoService.create(novo);
+                } catch (Exception e) {
+                    return "__ERR__" + e.getMessage();
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    String res = get();
+                    if (res != null && res.startsWith("__ERR__")) {
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Erro ao registrar: " + res.substring(7), "Erro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    if (JsonParser.isError(res)) {
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Erro ao registrar: " + JsonParser.extractJsonValue(res, "message"), "Erro", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(LoginFrame.this, "Registro realizado com sucesso. Você pode fazer login agora.", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(LoginFrame.this, "Erro desconhecido: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
+    }
+}
