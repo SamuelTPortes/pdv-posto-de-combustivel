@@ -147,8 +147,9 @@ public class MainFrame extends JFrame {
             new String[]{"ID", "Nome", "CPF", "CTPS", "Data Nasc."}, 0);
 
         pessoasTable = new JTable(pessoasModel);
-        JScrollPane scrollPane = new JScrollPane(pessoasTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        pessoasTable.setName("pessoasTable");
+         JScrollPane scrollPane = new JScrollPane(pessoasTable);
+         panel.add(scrollPane, BorderLayout.CENTER);
 
         carregarPessoas();
 
@@ -186,8 +187,9 @@ public class MainFrame extends JFrame {
             new String[]{"ID", "Nome", "Ref", "Fornecedor", "Marca", "Tipo"}, 0);
 
         produtosTable = new JTable(produtosModel);
-        JScrollPane scrollPane = new JScrollPane(produtosTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        produtosTable.setName("produtosTable");
+         JScrollPane scrollPane = new JScrollPane(produtosTable);
+         panel.add(scrollPane, BorderLayout.CENTER);
 
         carregarProdutos();
 
@@ -224,8 +226,9 @@ public class MainFrame extends JFrame {
         contatosModel = new DefaultTableModel(
             new String[]{"ID", "Nome", "Email", "Telefone"}, 0);
         contatosTable = new JTable(contatosModel);
-        JScrollPane scrollPane = new JScrollPane(contatosTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        contatosTable.setName("contatosTable");
+         JScrollPane scrollPane = new JScrollPane(contatosTable);
+         panel.add(scrollPane, BorderLayout.CENTER);
 
         carregarContatos();
 
@@ -258,7 +261,8 @@ public class MainFrame extends JFrame {
 
         precosModel = new DefaultTableModel(new String[]{"ID", "Valor", "Data", "Hora", "Tipo"}, 0);
         precosTable = new JTable(precosModel);
-        panel.add(new JScrollPane(precosTable), BorderLayout.CENTER);
+        precosTable.setName("precosTable");
+         panel.add(new JScrollPane(precosTable), BorderLayout.CENTER);
 
         carregarPrecos();
         return panel;
@@ -280,9 +284,10 @@ public class MainFrame extends JFrame {
         buttonPanel.add(addButton); buttonPanel.add(editButton); buttonPanel.add(deleteButton); buttonPanel.add(refreshButton);
         panel.add(buttonPanel, BorderLayout.NORTH);
 
-        estoquesModel = new DefaultTableModel(new String[]{"ID", "Quantidade", "Tanque", "Endereço", "Fabricação", "Validade"}, 0);
+        estoquesModel = new DefaultTableModel(new String[]{"ID", "Quantidade", "Tanque", "Endereço", "Fabricação", "Validade", "Tipo"}, 0);
         estoquesTable = new JTable(estoquesModel);
-        panel.add(new JScrollPane(estoquesTable), BorderLayout.CENTER);
+        estoquesTable.setName("estoquesTable");
+         panel.add(new JScrollPane(estoquesTable), BorderLayout.CENTER);
 
         carregarEstoques();
         return panel;
@@ -304,13 +309,14 @@ public class MainFrame extends JFrame {
         buttonPanel.add(addButton); buttonPanel.add(editButton); buttonPanel.add(deleteButton); buttonPanel.add(refreshButton);
         panel.add(buttonPanel, BorderLayout.NORTH);
 
-        custosModel = new DefaultTableModel(new String[]{"ID","Imposto","Frete","Seguro","Custo Var","Custo Fixo","Margem"}, 0);
+        custosModel = new DefaultTableModel(new String[]{"ID","Imposto","Frete","Seguro","Custo Var","Custo Fixo","Margem","Tipo"}, 0);
         custosTable = new JTable(custosModel);
-        panel.add(new JScrollPane(custosTable), BorderLayout.CENTER);
+        custosTable.setName("custosTable");
+         panel.add(new JScrollPane(custosTable), BorderLayout.CENTER);
 
-        carregarCustos();
-        return panel;
-    }
+         carregarCustos();
+         return panel;
+     }
 
     private JPanel createBottomBar() {
         JPanel bottomBar = new JPanel(new BorderLayout());
@@ -386,7 +392,7 @@ public class MainFrame extends JFrame {
                         if (idObj != null) id = idObj;
 
                         pessoasModel.addRow(new Object[]{
-                            id,
+                            normalizeIdForModel(id),
                             p.getNomeCompleto() != null ? p.getNomeCompleto() : "",
                             p.getCpfCnpj() != null ? p.getCpfCnpj() : "",
                             p.getNumeroCtps() != null ? p.getNumeroCtps() : "",
@@ -397,9 +403,11 @@ public class MainFrame extends JFrame {
                     statusLabel.setText("Conectado | Pessoas: " + pessoasModel.getRowCount());
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
+                    System.err.println("Interrupted while loading pessoas: " + ie.getMessage());
                     statusLabel.setText("Erro: operação interrompida");
                     JOptionPane.showMessageDialog(MainFrame.this, "Operação interrompida ao carregar pessoas.", "Erro", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception e) {
+                    System.err.println("Erro inesperado ao carregar pessoas: " + e.getMessage());
                     statusLabel.setText("Erro: " + e.getMessage());
                     JOptionPane.showMessageDialog(MainFrame.this, "Erro ao carregar pessoas: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
@@ -431,7 +439,7 @@ public class MainFrame extends JFrame {
                         Produto p = JsonParser.parseProduto(item);
                         if (p != null) {
                             produtosModel.addRow(new Object[]{
-                                    p.getId(),
+                                    normalizeIdForModel(p.getId()),
                                     p.getNome() != null ? p.getNome() : "",
                                     p.getReferencia() != null ? p.getReferencia() : "",
                                     p.getFornecedor() != null ? p.getFornecedor() : "",
@@ -470,7 +478,7 @@ public class MainFrame extends JFrame {
                         com.br.pdvpostocombustivelfrontend.frontend.model.Contato c = JsonParser.parseContato(item);
                         if (c != null) {
                             contatosModel.addRow(new Object[]{
-                                c.getId(),
+                                normalizeIdForModel(c.getId()),
                                 c.getEndereco() != null ? c.getEndereco() : "",
                                 c.getEmail() != null ? c.getEmail() : "",
                                 c.getTelefone() != null ? c.getTelefone() : ""
@@ -487,552 +495,86 @@ public class MainFrame extends JFrame {
     }
 
     private void carregarPrecos() {
-        precosModel.setRowCount(0);
-        new SwingWorker<String, Void>(){
-            @Override protected String doInBackground() throws Exception { return PrecoService.list(0,50); }
-            @Override protected void done(){
-                try { String res = get(); String[] items = JsonParser.extractJsonArrayItems(res, "content"); if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null);
-                    for(String it: items){ if (it==null||it.trim().isEmpty()) continue; Preco p = JsonParser.parsePreco(it); if (p!=null){ String date = JsonParser.formatDate(p.getDataAlteracao()); String time = JsonParser.formatTime(p.getHoraAlteracao()); precosModel.addRow(new Object[]{p.getId(), p.getValor(), date, time, p.getTipoPreco()}); }}
-                    statusLabel.setText("Conectado | Preços: " + precosModel.getRowCount());
-                } catch(Exception e){ statusLabel.setText("Erro: " + e.getMessage()); }
-            }
-        }.execute();
-    }
+         precosModel.setRowCount(0);
+         new SwingWorker<String, Void>(){
+             @Override protected String doInBackground() throws Exception { return PrecoService.list(0,50); }
+             @Override protected void done(){
+                 try {
+                     String res = get();
+                     String[] items = JsonParser.extractJsonArrayItems(res, "content");
+                     if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null);
+                     for(String it: items){
+                         if (it==null||it.trim().isEmpty()) continue;
+                        Preco p = JsonParser.parsePreco(it);
+                        if (p != null) {
+                            // If ID missing, try several fallback keys in the raw JSON
+                            if (p.getId() == null) {
+                                Long tryId = JsonParser.extractLongFallback(it, "id", "precoId", "codigo", "produtoId", "custoId");
+                                if (tryId != null) {
+                                    p.setId(tryId);
+                                    System.out.println("DEBUG carregarPrecos: extraido id fallback=" + tryId + " para item: " + it);
+                                } else {
+                                    System.err.println("DEBUG carregarPrecos: id ausente e fallback falhou para item: " + it);
+                                }
+                            }
 
-    private void carregarEstoques(){ estoquesModel.setRowCount(0); new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return EstoqueService.list(0,50);} @Override protected void done(){ try{ String res = get(); String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null); for(String it: items){ if (it==null||it.trim().isEmpty()) continue; Estoque e = JsonParser.parseEstoque(it); if (e!=null) { String dv = JsonParser.formatDate(e.getDataValidade()); estoquesModel.addRow(new Object[]{e.getId(), e.getQuantidade(), e.getLocalTanque(), e.getLocalEndereco(), e.getLocalFabricacao(), dv}); } } statusLabel.setText("Conectado | Estoques: " + estoquesModel.getRowCount()); } catch(Exception ex){ statusLabel.setText("Erro: " + ex.getMessage()); } } }.execute(); }
+                            // Normalize valor (accept things like "12m" or "12,00")
+                            try {
+                                String rawValor = p.getValor();
+                                if (rawValor != null) {
+                                    rawValor = rawValor.trim();
+                                    // replace comma with dot
+                                    rawValor = rawValor.replace(',', '.');
+                                    // keep digits, dot and minus
+                                    rawValor = rawValor.replaceAll("[^0-9.\-]", "");
+                                    p.setValor(rawValor);
+                                }
+                            } catch (Exception ex) {
+                                System.err.println("DEBUG carregarPrecos: falha ao normalizar valor: " + ex.getMessage());
+                            }
 
-    private void carregarCustos(){ custosModel.setRowCount(0); new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return CustoService.list(0,50);} @Override protected void done(){ try{ String res = get(); String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null); for(String it: items){ if (it==null||it.trim().isEmpty()) continue; Custo c = JsonParser.parseCusto(it); if (c!=null) custosModel.addRow(new Object[]{c.getId(), c.getImposto(), c.getFrete(), c.getSeguro(), c.getCustoVariavel(), c.getCustoFixo(), c.getMargemLucro()}); } statusLabel.setText("Conectado | Custos: " + custosModel.getRowCount()); } catch(Exception ex){ statusLabel.setText("Erro: " + ex.getMessage()); } } }.execute(); }
-
-    private void adicionarPessoa() {
-        Pessoa pessoa = CrudDialog.showPessoaDialog(this, null, "Adicionar Nova Pessoa");
-        System.out.println("DEBUG: showPessoaDialog retornou: " + pessoa);
-
-        if (pessoa == null) {
-            System.out.println("DEBUG: usuário cancelou ou diálogo retornou null. Abortando.");
-            return;
-        }
-
-        // opcional: desabilitar botão adicionar aqui, se houver referência
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                System.out.println("DEBUG: iniciando PessoaService.create...");
-                String resp = PessoaService.create(pessoa);
-                System.out.println("DEBUG: PessoaService.create retornou: " + resp);
-                return resp;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    String response = get(); // pode lançar ExecutionException se doInBackground falhou
-                    // Verifique response para decidir sucesso/erro
-                    if (response == null || response.isBlank()) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                                "Pessoa adicionada, mas resposta vazia do serviço.",
-                                "Aviso", JOptionPane.WARNING_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                                "Pessoa adicionada com sucesso!",
-                                "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    carregarPessoas();
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    ie.printStackTrace();
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                            "Operação interrompida.",
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro inesperado: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    // opcional: reabilitar botão adicionar aqui
-                }
-            }
-        }.execute();
-    }
-
-    private void editarPessoa() {
-        int selectedRow = pessoasTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma pessoa.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Long id = (Long) pessoasModel.getValueAt(selectedRow, 0);
-        String nome = (String) pessoasModel.getValueAt(selectedRow, 1);
-        String cpf = (String) pessoasModel.getValueAt(selectedRow, 2);
-
-        Pessoa pessoaAnterior = new Pessoa();
-        pessoaAnterior.setId(id);
-        pessoaAnterior.setNomeCompleto(nome);
-        pessoaAnterior.setCpfCnpj(cpf);
-
-        Pessoa pessoaEditada = CrudDialog.showPessoaDialog(this, pessoaAnterior, "Editar Pessoa");
-
-        if (pessoaEditada != null) {
-            new SwingWorker<String, Void>() {
-                @Override
-                protected String doInBackground() throws Exception {
-                    return PessoaService.update(id, pessoaEditada);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        String response = get();
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Pessoa atualizada!",
-                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        carregarPessoas();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.execute();
-        }
-    }
-
-    private void deletarPessoa() {
-        int selectedRow = pessoasTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione uma pessoa.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Long id = (Long) pessoasModel.getValueAt(selectedRow, 0);
-        String nome = (String) pessoasModel.getValueAt(selectedRow, 1);
-
-        if (CrudDialog.showConfirmDeleteDialog(this, nome)) {
-            new SwingWorker<String, Void>() {
-                @Override
-                protected String doInBackground() throws Exception {
-                    return PessoaService.delete(id);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        String response = get();
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Pessoa deletada!",
-                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        carregarPessoas();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.execute();
-        }
-    }
-
-    private void adicionarProduto() {
-        Produto produto = CrudDialog.showProdutoDialog(this, null, "Adicionar Novo Produto");
-
-        if (produto != null) {
-            new SwingWorker<String, Void>() {
-                @Override
-                protected String doInBackground() throws Exception {
-                    return CrudService.createProduto(produto);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        String response = get();
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Produto adicionado!",
-                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        carregarProdutos();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.execute();
-        }
-    }
-
-    private void editarProduto() {
-        int selectedRow = produtosTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Long id = (Long) produtosModel.getValueAt(selectedRow, 0);
-        String nome = (String) produtosModel.getValueAt(selectedRow, 1);
-        String ref = (String) produtosModel.getValueAt(selectedRow, 2);
-        String forn = (String) produtosModel.getValueAt(selectedRow, 3);
-        String marca = (String) produtosModel.getValueAt(selectedRow, 4);
-        String tipo = (String) produtosModel.getValueAt(selectedRow, 5);
-
-        Produto produtoAnterior = new Produto();
-        produtoAnterior.setId(id);
-        produtoAnterior.setNome(nome);
-        produtoAnterior.setReferencia(ref);
-        produtoAnterior.setFornecedor(forn);
-        produtoAnterior.setMarca(marca);
-        produtoAnterior.setTipoProduto(tipo);
-
-        Produto produtoEditado = CrudDialog.showProdutoDialog(this, produtoAnterior, "Editar Produto");
-
-        if (produtoEditado != null) {
-            new SwingWorker<String, Void>() {
-                @Override
-                protected String doInBackground() throws Exception {
-                    return CrudService.updateProduto(id, produtoEditado);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        String response = get();
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Produto atualizado!",
-                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        carregarProdutos();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.execute();
-        }
-    }
-
-    private void deletarProduto() {
-        int selectedRow = produtosTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto.",
-                "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        Long id = (Long) produtosModel.getValueAt(selectedRow, 0);
-        String nome = (String) produtosModel.getValueAt(selectedRow, 1);
-
-        if (CrudDialog.showConfirmDeleteDialog(this, nome)) {
-            new SwingWorker<String, Void>() {
-                @Override
-                protected String doInBackground() throws Exception {
-                    return CrudService.deleteProduto(id);
-                }
-
-                @Override
-                protected void done() {
-                    try {
-                        String response = get();
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Produto deletado!",
-                            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        carregarProdutos();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(MainFrame.this,
-                            "Erro: " + e.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }.execute();
-        }
-    }
-
-    private void adicionarContato() {
-        com.br.pdvpostocombustivelfrontend.frontend.model.Contato contato = CrudDialog.showContatoDialog(this, null, "Adicionar Contato");
-        if (contato == null) return;
-
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                return com.br.pdvpostocombustivelfrontend.frontend.service.ContatoService.create(contato);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    String res = get();
-                    JOptionPane.showMessageDialog(MainFrame.this, "Contato criado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    carregarContatos();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }.execute();
-    }
-
-    private void editarContato() {
-        int selectedRow = contatosTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um contato.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Long id = (Long) contatosModel.getValueAt(selectedRow, 0);
-        String endereco = (String) contatosModel.getValueAt(selectedRow, 1);
-        String email = (String) contatosModel.getValueAt(selectedRow, 2);
-        String telefone = (String) contatosModel.getValueAt(selectedRow, 3);
-
-        com.br.pdvpostocombustivelfrontend.frontend.model.Contato c = new com.br.pdvpostocombustivelfrontend.frontend.model.Contato();
-        c.setId(id); c.setEndereco(endereco); c.setEmail(email); c.setTelefone(telefone);
-
-        com.br.pdvpostocombustivelfrontend.frontend.model.Contato updated = CrudDialog.showContatoDialog(this, c, "Editar Contato");
-        if (updated == null) return;
-
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                return com.br.pdvpostocombustivelfrontend.frontend.service.ContatoService.update(id, updated);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                    JOptionPane.showMessageDialog(MainFrame.this, "Contato atualizado!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    carregarContatos();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }.execute();
-    }
-
-    private void deletarContato() {
-        int selectedRow = contatosTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um contato.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Long id = (Long) contatosModel.getValueAt(selectedRow, 0);
-        String nome = (String) contatosModel.getValueAt(selectedRow, 1);
-        if (!CrudDialog.showConfirmDeleteDialog(this, nome)) return;
-
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                return com.br.pdvpostocombustivelfrontend.frontend.service.ContatoService.delete(id);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                    JOptionPane.showMessageDialog(MainFrame.this, "Contato deletado!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    carregarContatos();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }.execute();
-    }
-
-    // ==================== PREÇOS CRUD ====================
-    private void adicionarPreco(){ Preco p = CrudDialog.showPrecoDialog(this,null,"Adicionar Preço"); if (p==null) return; new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return PrecoService.create(p);} @Override protected void done(){ try{ String resp = get();
-                    if (resp == null || resp.isBlank()) {
-                        JOptionPane.showMessageDialog(MainFrame.this, "Resposta vazia do serviço ao criar preço.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    } else if (JsonParser.isError(resp)) {
-                        String msg = JsonParser.extractJsonValue(resp, "message"); if (msg == null) msg = JsonParser.extractJsonValue(resp, "mensagem"); if (msg == null) msg = resp;
-                        JOptionPane.showMessageDialog(MainFrame.this, "Erro criando preço: " + msg, "Erro", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        com.br.pdvpostocombustivelfrontend.frontend.model.Preco created = JsonParser.parsePreco(resp);
-                        if (created != null) {
-                            String disp = "Preço criado: " + (created.getValor()!=null?created.getValor():"") + " em " + (JsonParser.formatDate(created.getDataAlteracao())!=null?JsonParser.formatDate(created.getDataAlteracao()):"") + " " + (JsonParser.formatTime(created.getHoraAlteracao())!=null?JsonParser.formatTime(created.getHoraAlteracao()):"");
-                            JOptionPane.showMessageDialog(MainFrame.this, disp, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                            String date = JsonParser.formatDate(p.getDataAlteracao());
+                            String time = JsonParser.formatTime(p.getHoraAlteracao());
+                            precosModel.addRow(new Object[]{normalizeIdForModel(p.getId()), p.getValor(), date, time, p.getTipoPreco()});
                         } else {
-                            JOptionPane.showMessageDialog(MainFrame.this,"Preço criado com sucesso!\nResposta: " + resp,"Sucesso",JOptionPane.INFORMATION_MESSAGE);
+                            System.err.println("DEBUG carregarPrecos: parsePreco retornou null para item: " + it);
                         }
-                        carregarPrecos();
-                    }
-                }catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute(); }
+                     }
+                     statusLabel.setText("Conectado | Preços: " + precosModel.getRowCount());
+                 } catch(Exception e){ statusLabel.setText("Erro: " + e.getMessage()); }
+             }
+         }.execute();
+     }
 
-    private void editarPreco() {
-        int selectedRow = precosTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Selecione um preço.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+    private void carregarEstoques(){ estoquesModel.setRowCount(0); new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return EstoqueService.list(0,50);} @Override protected void done(){ try{ String res = get(); String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null); for(String it: items){ if (it==null||it.trim().isEmpty()) continue; Estoque e = JsonParser.parseEstoque(it); if (e!=null) { String dv = JsonParser.formatDate(e.getDataValidade()); estoquesModel.addRow(new Object[]{normalizeIdForModel(e.getId()), e.getQuantidade(), e.getLocalTanque(), e.getLocalEndereco(), e.getLocalFabricacao(), dv, e.getTipoEstoque()}); } } statusLabel.setText("Conectado | Estoques: " + estoquesModel.getRowCount()); } catch(Exception ex){ statusLabel.setText("Erro: " + ex.getMessage()); } } }.execute(); }
 
-        // read values from table safely
-        Object idObj = precosModel.getValueAt(selectedRow, 0);
-        final Long id;
-        if (idObj instanceof Long) id = (Long) idObj;
-        else if (idObj instanceof Number) id = ((Number) idObj).longValue();
-        else { try { id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; } }
+    private void carregarCustos(){ custosModel.setRowCount(0); new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return CustoService.list(0,50);} @Override protected void done(){ try{ String res = get(); String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items.length==0) items = JsonParser.extractJsonArrayItems(res,null); for(String it: items){ if (it==null||it.trim().isEmpty()) continue; Custo c = JsonParser.parseCusto(it); if (c != null) {
+                                if (c.getId() == null) {
+                                    Long tryId = JsonParser.extractLongFallback(it, "id", "custoId", "codigo", "produtoId");
+                                    if (tryId != null) {
+                                        c.setId(tryId);
+                                        System.out.println("DEBUG carregarCustos: extraido id fallback=" + tryId + " para item: " + it);
+                                    } else {
+                                        System.err.println("DEBUG carregarCustos: id ausente e fallback falhou para item: " + it);
+                                    }
+                                }
 
-        String valor = String.valueOf(precosModel.getValueAt(selectedRow, 1));
-        String data = String.valueOf(precosModel.getValueAt(selectedRow, 2));
-        String hora = String.valueOf(precosModel.getValueAt(selectedRow, 3));
-        String tipo = String.valueOf(precosModel.getValueAt(selectedRow, 4));
+                                // Normalize numeric fields (imposto, frete, seguro, etc.) to remove stray chars and unify decimal point
+                                try {
+                                    if (c.getImposto() != null) c.setImposto(c.getImposto().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                    if (c.getFrete() != null) c.setFrete(c.getFrete().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                    if (c.getSeguro() != null) c.setSeguro(c.getSeguro().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                    if (c.getCustoVariavel() != null) c.setCustoVariavel(c.getCustoVariavel().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                    if (c.getCustoFixo() != null) c.setCustoFixo(c.getCustoFixo().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                    if (c.getMargemLucro() != null) c.setMargemLucro(c.getMargemLucro().replace(',', '.').replaceAll("[^0-9.\-]", ""));
+                                } catch (Exception ex) {
+                                    System.err.println("DEBUG carregarCustos: falha ao normalizar numeros: " + ex.getMessage());
+                                }
 
-        Preco prev = new Preco();
-        prev.setId(id);
-        prev.setValor(valor);
-        prev.setDataAlteracao(data);
-        prev.setHoraAlteracao(hora);
-        prev.setTipoPreco(tipo);
-
-        Preco updated = CrudDialog.showPrecoDialog(this, prev, "Editar Preço");
-        if (updated == null) return;
-
-        new SwingWorker<String, Void>() {
-            @Override
-            protected String doInBackground() throws Exception {
-                return PrecoService.update(id, updated);
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                    carregarPrecos();
-                    JOptionPane.showMessageDialog(MainFrame.this, "Preço atualizado!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(MainFrame.this, "Erro: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }.execute();
-    }
-
-    private void deletarPreco() {
-        int selectedRow = precosTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um preço.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Object idObj = precosModel.getValueAt(selectedRow, 0);
-        Long id;
-        try { if (idObj instanceof Number) id = ((Number)idObj).longValue(); else id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-        if (!CrudDialog.showConfirmDeleteDialog(this, "Preço id="+id)) return;
-        new SwingWorker<String, Void>(){
-            @Override protected String doInBackground() throws Exception { return PrecoService.delete(id); }
-            @Override protected void done(){ try{ get(); carregarPrecos(); JOptionPane.showMessageDialog(MainFrame.this,"Preço deletado!","Sucesso",JOptionPane.INFORMATION_MESSAGE);}catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} }
-        }.execute();
-    }
-
-    // ==================== ESTOQUES CRUD ====================
-    private void adicionarEstoque() {
-        Estoque e = CrudDialog.showEstoqueDialog(this,null,"Adicionar Estoque"); if (e==null) return; new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return EstoqueService.create(e);} @Override protected void done(){ try{ String resp = get();
-                    if (resp == null || resp.isBlank()) {
-                        JOptionPane.showMessageDialog(MainFrame.this, "Resposta vazia do serviço ao criar estoque.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    } else if (JsonParser.isError(resp)) {
-                        String msg = JsonParser.extractJsonValue(resp, "message"); if (msg == null) msg = JsonParser.extractJsonValue(resp, "mensagem"); if (msg == null) msg = resp;
-                        JOptionPane.showMessageDialog(MainFrame.this, "Erro criando estoque: " + msg, "Erro", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        com.br.pdvpostocombustivelfrontend.frontend.model.Estoque created = JsonParser.parseEstoque(resp);
-                        if (created != null) {
-                            String disp = "Estoque criado: qtd=" + (created.getQuantidade()!=null?created.getQuantidade():"") + " tanque=" + (created.getLocalTanque()!=null?created.getLocalTanque():"") + " validade=" + (JsonParser.formatDate(created.getDataValidade())!=null?JsonParser.formatDate(created.getDataValidade()):"");
-                            JOptionPane.showMessageDialog(MainFrame.this, disp, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            JOptionPane.showMessageDialog(MainFrame.this,"Estoque criado com sucesso!\nResposta: " + resp,"Sucesso",JOptionPane.INFORMATION_MESSAGE);
-                        }
-                        carregarEstoques();
-                    }
-                }catch(Exception ex){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+ex.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute(); }
-
-    private void editarEstoque() {
-        int selectedRow = estoquesTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um estoque.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Object idObj = estoquesModel.getValueAt(selectedRow, 0);
-        final Long id;
-        try { if (idObj instanceof Number) id = ((Number)idObj).longValue(); else id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-
-        String quantidade = String.valueOf(estoquesModel.getValueAt(selectedRow,1));
-        String tanque = String.valueOf(estoquesModel.getValueAt(selectedRow,2));
-        String endereco = String.valueOf(estoquesModel.getValueAt(selectedRow,3));
-        String fabrica = String.valueOf(estoquesModel.getValueAt(selectedRow,4));
-        String validade = String.valueOf(estoquesModel.getValueAt(selectedRow,5));
-
-        Estoque prev = new Estoque(); prev.setId(id); prev.setQuantidade(quantidade); prev.setLocalTanque(tanque); prev.setLocalEndereco(endereco); prev.setLocalFabricacao(fabrica); prev.setDataValidade(validade);
-        Estoque updated = CrudDialog.showEstoqueDialog(this, prev, "Editar Estoque"); if (updated==null) return;
-
-        new SwingWorker<String,Void>(){
-            @Override protected String doInBackground() throws Exception { return EstoqueService.update(id, updated); }
-            @Override protected void done(){ try{ get(); carregarEstoques(); JOptionPane.showMessageDialog(MainFrame.this,"Estoque atualizado!","Sucesso",JOptionPane.INFORMATION_MESSAGE);}catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} }
-        }.execute();
-    }
-
-    private void deletarEstoque() {
-        int selectedRow = estoquesTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um estoque.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Object idObj = estoquesModel.getValueAt(selectedRow, 0);
-        Long id; try { if (idObj instanceof Number) id = ((Number)idObj).longValue(); else id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-        if (!CrudDialog.showConfirmDeleteDialog(this, "Estoque id="+id)) return;
-        new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return EstoqueService.delete(id);} @Override protected void done(){ try{ get(); carregarEstoques(); JOptionPane.showMessageDialog(MainFrame.this,"Estoque deletado!","Sucesso",JOptionPane.INFORMATION_MESSAGE);}catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute();
-    }
-
-    // ==================== CUSTOS CRUD ====================
-    private void adicionarCusto(){ Custo c = CrudDialog.showCustoDialog(this,null,"Adicionar Custo"); if (c==null) return; new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return CustoService.create(c);} @Override protected void done(){ try{ String resp = get();
-                    if (resp == null || resp.isBlank()) {
-                        JOptionPane.showMessageDialog(MainFrame.this, "Resposta vazia do serviço ao criar custo.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    } else if (JsonParser.isError(resp)) {
-                        String msg = JsonParser.extractJsonValue(resp, "message"); if (msg == null) msg = JsonParser.extractJsonValue(resp, "mensagem"); if (msg == null) msg = resp;
-                        JOptionPane.showMessageDialog(MainFrame.this, "Erro criando custo: " + msg, "Erro", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        com.br.pdvpostocombustivelfrontend.frontend.model.Custo created = JsonParser.parseCusto(resp);
-                        if (created != null) {
-                            String disp = "Custo criado: imposto=" + (created.getImposto()!=null?created.getImposto():"") + " margem=" + (created.getMargemLucro()!=null?created.getMargemLucro():"");
-                            JOptionPane.showMessageDialog(MainFrame.this, disp, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                        } else {
-                            JOptionPane.showMessageDialog(MainFrame.this,"Custo criado com sucesso!\nResposta: " + resp,"Sucesso",JOptionPane.INFORMATION_MESSAGE);
-                        }
-                        carregarCustos();
-                    }
-                }catch(Exception ex){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+ex.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute(); }
-
-    private void editarCusto() {
-        int selectedRow = custosTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um custo.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Object idObj = custosModel.getValueAt(selectedRow, 0);
-        final Long id; try { if (idObj instanceof Number) id = ((Number)idObj).longValue(); else id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-
-        String imposto = String.valueOf(custosModel.getValueAt(selectedRow,1));
-        String frete = String.valueOf(custosModel.getValueAt(selectedRow,2));
-        String seguro = String.valueOf(custosModel.getValueAt(selectedRow,3));
-        String custoVar = String.valueOf(custosModel.getValueAt(selectedRow,4));
-        String custoFixo = String.valueOf(custosModel.getValueAt(selectedRow,5));
-        String margem = String.valueOf(custosModel.getValueAt(selectedRow,6));
-
-        com.br.pdvpostocombustivelfrontend.frontend.model.Custo prev = new com.br.pdvpostocombustivelfrontend.frontend.model.Custo();
-        prev.setId(id); prev.setImposto(imposto); prev.setFrete(frete); prev.setSeguro(seguro); prev.setCustoVariavel(custoVar); prev.setCustoFixo(custoFixo); prev.setMargemLucro(margem);
-        com.br.pdvpostocombustivelfrontend.frontend.model.Custo updated = CrudDialog.showCustoDialog(this, prev, "Editar Custo"); if (updated==null) return;
-
-        new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return CustoService.update(id, updated);} @Override protected void done(){ try{ get(); carregarCustos(); JOptionPane.showMessageDialog(MainFrame.this,"Custo atualizado!","Sucesso",JOptionPane.INFORMATION_MESSAGE);}catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute();
-    }
-
-    private void deletarCusto() {
-        int selectedRow = custosTable.getSelectedRow();
-        if (selectedRow < 0) { JOptionPane.showMessageDialog(this, "Selecione um custo.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        Object idObj = custosModel.getValueAt(selectedRow, 0);
-        Long id; try { if (idObj instanceof Number) id = ((Number)idObj).longValue(); else id = Long.parseLong(String.valueOf(idObj)); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "ID inválido.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-        if (!CrudDialog.showConfirmDeleteDialog(this, "Custo id="+id)) return;
-        new SwingWorker<String,Void>(){ @Override protected String doInBackground() throws Exception { return CustoService.delete(id);} @Override protected void done(){ try{ get(); carregarCustos(); JOptionPane.showMessageDialog(MainFrame.this,"Custo deletado!","Sucesso",JOptionPane.INFORMATION_MESSAGE);}catch(Exception e){ JOptionPane.showMessageDialog(MainFrame.this,"Erro: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);} } }.execute();
-    }
-
-    private void startClock() {
-        clockTimer = new Timer(1000, e -> updateClock());
-        clockTimer.start();
-    }
-
-    private void updateClock() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        statusLabel.setText("Conectado | " + sdf.format(new Date()));
-    }
-
-    private void logout() {
-        if (JOptionPane.showConfirmDialog(this,
-            "Deseja sair?",
-            "Confirmar",
-            JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            clockTimer.stop();
-            dispose();
-
-            SwingUtilities.invokeLater(() -> {
-                LoginFrame loginFrame = new LoginFrame();
-                loginFrame.setVisible(true);
-            });
-        }
-    }
-}
-
+                                custosModel.addRow(new Object[]{normalizeIdForModel(c.getId()), c.getImposto(), c.getFrete(), c.getSeguro(), c.getCustoVariavel(), c.getCustoFixo(), c.getMargemLucro(), c.getTipoCusto()});
+                            } else {
+                                System.err.println("DEBUG carregarCustos: parseCusto retornou null para item: " + it);
+                            }
+                     }
+                     statusLabel.setText("Conectado | Custos: " + custosModel.getRowCount());
+                 } catch(Exception ex){ statusLabel.setText("Erro: " + ex.getMessage()); }

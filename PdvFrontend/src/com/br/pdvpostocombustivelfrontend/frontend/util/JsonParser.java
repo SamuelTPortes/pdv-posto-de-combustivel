@@ -148,24 +148,30 @@ public class JsonParser {
     public static com.br.pdvpostocombustivelfrontend.frontend.model.Preco parsePreco(String json) {
         try {
             com.br.pdvpostocombustivelfrontend.frontend.model.Preco p = new com.br.pdvpostocombustivelfrontend.frontend.model.Preco();
-            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { p.setId(Long.parseLong(id)); } catch (Exception ex) {}
+            String idStr = extractValue(json, "id");
+            if ((idStr == null || idStr.isEmpty())) {
+                Long idL = extractLongFallback(json, "id"); if (idL != null) p.setId(idL);
+            } else {
+                try { p.setId(Long.parseLong(idStr)); } catch (Exception ex) { Long idL = extractLongFallback(json, "id"); if (idL != null) p.setId(idL); }
+            }
+
             p.setValor(extractValue(json, "valor"));
 
-            // normalize dataAlteracao/horaAlteracao returned as ISO datetimes with optional timezone
             String rawData = extractValue(json, "dataAlteracao");
+            if (rawData == null || rawData.isEmpty()) rawData = extractValueFallback(json, "dataAlteracao", "data_alteracao");
             if (rawData != null && !rawData.isEmpty()) {
-                // if backend returned full ISO datetime, keep only date part
-                String dateOnly = normalizeDateOnly(rawData);
-                p.setDataAlteracao(dateOnly);
+                p.setDataAlteracao(normalizeDateOnly(rawData));
             }
 
             String rawHora = extractValue(json, "horaAlteracao");
+            if (rawHora == null || rawHora.isEmpty()) rawHora = extractValueFallback(json, "horaAlteracao", "hora_alteracao");
             if (rawHora != null && !rawHora.isEmpty()) {
-                String timeOnly = normalizeTimeOnly(rawHora);
-                p.setHoraAlteracao(timeOnly);
+                p.setHoraAlteracao(normalizeTimeOnly(rawHora));
             }
 
-            p.setTipoPreco(extractValue(json, "tipoPreco"));
+            // tipoPreco can come as tipoPreco or tipo_preco
+            String tipo = extractValueFallback(json, "tipoPreco", "tipo_preco", "tipoPrecoEnum");
+            p.setTipoPreco(tipo);
             return p;
         } catch (Exception e) { return null; }
     }
@@ -176,18 +182,20 @@ public class JsonParser {
     public static com.br.pdvpostocombustivelfrontend.frontend.model.Estoque parseEstoque(String json) {
         try {
             com.br.pdvpostocombustivelfrontend.frontend.model.Estoque e = new com.br.pdvpostocombustivelfrontend.frontend.model.Estoque();
-            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { e.setId(Long.parseLong(id)); } catch (Exception ex) {}
+            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { e.setId(Long.parseLong(id)); } catch (Exception ex) { Long idL = extractLongFallback(json, "id"); if (idL!=null) e.setId(idL); }
             e.setQuantidade(extractValue(json, "quantidade"));
             e.setLocalTanque(extractValue(json, "localTanque"));
             e.setLocalEndereco(extractValue(json, "localEndereco"));
             e.setLocalFabricacao(extractValue(json, "localFabricacao"));
 
             String rawVal = extractValue(json, "dataValidade");
+            if (rawVal == null || rawVal.isEmpty()) rawVal = extractValueFallback(json, "dataValidade", "data_validade");
             if (rawVal != null && !rawVal.isEmpty()) {
                 e.setDataValidade(normalizeDateOnly(rawVal));
             }
 
-            e.setTipoEstoque(extractValue(json, "tipoEstoque"));
+            String tipo = extractValueFallback(json, "tipoEstoque", "tipo_estoque");
+            e.setTipoEstoque(tipo);
             return e;
         } catch (Exception ex) { return null; }
     }
@@ -198,14 +206,15 @@ public class JsonParser {
     public static com.br.pdvpostocombustivelfrontend.frontend.model.Custo parseCusto(String json) {
         try {
             com.br.pdvpostocombustivelfrontend.frontend.model.Custo c = new com.br.pdvpostocombustivelfrontend.frontend.model.Custo();
-            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { c.setId(Long.parseLong(id)); } catch (Exception ex) {}
+            String id = extractValue(json, "id"); if (id != null && !id.isEmpty()) try { c.setId(Long.parseLong(id)); } catch (Exception ex) { Long idL = extractLongFallback(json, "id"); if (idL!=null) c.setId(idL); }
             c.setImposto(extractValue(json, "imposto"));
             c.setFrete(extractValue(json, "frete"));
             c.setSeguro(extractValue(json, "seguro"));
             c.setCustoVariavel(extractValue(json, "custoVariavel"));
             c.setCustoFixo(extractValue(json, "custoFixo"));
             c.setMargemLucro(extractValue(json, "margemLucro"));
-            c.setTipoCusto(extractValue(json, "tipoCusto"));
+            String tipo = extractValueFallback(json, "tipoCusto", "tipo_custo");
+            c.setTipoCusto(tipo);
             return c;
         } catch (Exception e) { return null; }
     }
@@ -388,5 +397,68 @@ public class JsonParser {
         } catch (Exception e) {
             return new String[0];
         }
+    }
+
+    /**
+     * Tenta extrair um valor string por várias chaves alternativas, e faz fallback por regex se necessário.
+     */
+    private static String extractValueFallback(String json, String key, String... altKeys) {
+        try {
+            String v = extractValue(json, key);
+            if (v != null) return v;
+            if (altKeys != null) {
+                for (String k : altKeys) {
+                    v = extractValue(json, k);
+                    if (v != null) return v;
+                }
+            }
+            // fallback regex to capture quoted string: "key"\s*:\s*"([^"]*)"
+            String regex = "\\\"" + java.util.regex.Pattern.quote(key) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"";
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile(regex);
+            java.util.regex.Matcher m = p.matcher(json);
+            if (m.find()) return m.group(1);
+            // try alternative keys by regex
+            if (altKeys != null) {
+                for (String k : altKeys) {
+                    String regexAlt = "\\\"" + java.util.regex.Pattern.quote(k) + "\\\"\\s*:\\s*\\\"([^\\\"]*)\\\"";
+                    p = java.util.regex.Pattern.compile(regexAlt);
+                    m = p.matcher(json);
+                    if (m.find()) return m.group(1);
+                }
+            }
+            return null;
+        } catch (Exception e) { return null; }
+    }
+
+    /**
+     * Extrai um número inteiro (Long) de um JSON, tentando várias estratégias.
+     */
+    private static Long extractLongFallback(String json, String key, String... altKeys) {
+        try {
+            String v = extractValue(json, key);
+            if (v != null && !v.trim().isEmpty()) {
+                try { return Long.parseLong(v.trim()); } catch (Exception ex) { /* continue to regex */ }
+            }
+            if (altKeys != null) {
+                for (String k : altKeys) {
+                    v = extractValue(json, k);
+                    if (v != null && !v.trim().isEmpty()) {
+                        try { return Long.parseLong(v.trim()); } catch (Exception ex) { }
+                    }
+                }
+            }
+            // regex to find unquoted numeric value: "key"\s*:\s*(\d+)
+            java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"" + java.util.regex.Pattern.quote(key) + "\"\\s*:\\s*(\\d+)");
+            java.util.regex.Matcher m = p.matcher(json);
+            if (m.find()) return Long.parseLong(m.group(1));
+            if (altKeys != null) {
+                for (String k : altKeys) {
+                    p = java.util.regex.Pattern.compile("\"" + java.util.regex.Pattern.quote(k) + "\"\\s*:\\s*(\\d+)");
+                    m = p.matcher(json);
+                    if (m.find()) return Long.parseLong(m.group(1));
+                }
+            }
+            return null;
+        } catch (Exception e) { return null; }
     }
 }
