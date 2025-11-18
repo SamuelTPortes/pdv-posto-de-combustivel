@@ -353,4 +353,75 @@ public class CrudDialog {
                 JOptionPane.WARNING_MESSAGE);
         return result == JOptionPane.YES_OPTION;
     }
+
+    // ==================== VENDA ====================
+
+    /**
+     * Dialog para adicionar/editar venda
+     */
+    public static com.br.pdvpostocombustivelfrontend.frontend.model.Venda showVendaDialog(JFrame parent,
+            com.br.pdvpostocombustivelfrontend.frontend.model.Venda venda, String title) {
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JTextField descricaoField = new JTextField(venda != null ? venda.getDescricaoProduto() : "");
+        JTextField quantidadeField = new JTextField(venda != null ? venda.getQuantidade() : "");
+        JTextField valorUnitarioField = new JTextField(venda != null ? venda.getValorUnitario() : "");
+        JTextField dataVendaField = new JTextField(venda != null ? venda.getDataVenda() : java.time.LocalDate.now().toString());
+        JTextField horaVendaField = new JTextField(venda != null ? venda.getHoraVenda() : java.time.LocalTime.now().toString().substring(0, 5));
+        JTextField observacoesField = new JTextField(venda != null ? venda.getObservacoes() : "");
+
+        JComboBox<String> tipoCombustivelCombo = new JComboBox<>(new String[]{"GASOLINA", "DIESEL", "ALCOOL", "OUTROS"});
+        if (venda != null && venda.getTipoCombustivel() != null) {
+            tipoCombustivelCombo.setSelectedItem(venda.getTipoCombustivel());
+        }
+
+        JComboBox<String> tipoPrecoCombo = new JComboBox<>(new String[]{"UNITARIO", "TOTAL"});
+        if (venda != null && venda.getTipoPreco() != null) {
+            tipoPrecoCombo.setSelectedItem(venda.getTipoPreco());
+        }
+
+        panel.add(new JLabel("Descrição Produto:"));
+        panel.add(descricaoField);
+        panel.add(new JLabel("Quantidade:"));
+        panel.add(quantidadeField);
+        panel.add(new JLabel("Valor Unitário:"));
+        panel.add(valorUnitarioField);
+        panel.add(new JLabel("Data Venda (YYYY-MM-DD):"));
+        panel.add(dataVendaField);
+        panel.add(new JLabel("Hora Venda (HH:MM):"));
+        panel.add(horaVendaField);
+        panel.add(new JLabel("Tipo Combustível:"));
+        panel.add(tipoCombustivelCombo);
+        panel.add(new JLabel("Tipo Preço:"));
+        panel.add(tipoPrecoCombo);
+        panel.add(new JLabel("Observações:"));
+        panel.add(observacoesField);
+
+        int result = JOptionPane.showConfirmDialog(parent, panel, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                com.br.pdvpostocombustivelfrontend.frontend.model.Venda novaVenda = new com.br.pdvpostocombustivelfrontend.frontend.model.Venda();
+                if (venda != null && venda.getId() != null) {
+                    novaVenda.setId(venda.getId());
+                }
+                novaVenda.setDescricaoProduto(descricaoField.getText());
+                novaVenda.setQuantidade(quantidadeField.getText());
+                novaVenda.setValorUnitario(valorUnitarioField.getText());
+                novaVenda.setDataVenda(dataVendaField.getText());
+                novaVenda.setHoraVenda(horaVendaField.getText());
+                novaVenda.setTipoCombustivel((String) tipoCombustivelCombo.getSelectedItem());
+                novaVenda.setTipoPreco((String) tipoPrecoCombo.getSelectedItem());
+                novaVenda.setObservacoes(observacoesField.getText());
+                return novaVenda;
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(parent, "Erro ao processar dados da venda: " + e.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+                return null;
+            }
+        }
+        return null;
+    }
 }

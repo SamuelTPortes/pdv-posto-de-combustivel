@@ -8,6 +8,7 @@ import com.br.pdvpostocombustivelfrontend.frontend.model.Preco;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Estoque;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Custo;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Acesso;
+import com.br.pdvpostocombustivelfrontend.frontend.model.Venda;
 import com.br.pdvpostocombustivelfrontend.frontend.service.PessoaService;
 import com.br.pdvpostocombustivelfrontend.frontend.service.CrudService;
 import com.br.pdvpostocombustivelfrontend.frontend.service.PrecoService;
@@ -15,6 +16,7 @@ import com.br.pdvpostocombustivelfrontend.frontend.service.EstoqueService;
 import com.br.pdvpostocombustivelfrontend.frontend.service.CustoService;
 import com.br.pdvpostocombustivelfrontend.frontend.service.AcessoService;
 import com.br.pdvpostocombustivelfrontend.frontend.service.ContatoService;
+import com.br.pdvpostocombustivelfrontend.frontend.service.VendaService;
 import com.br.pdvpostocombustivelfrontend.frontend.util.JsonParser;
 import com.br.pdvpostocombustivelfrontend.frontend.ui.CrudDialog;
 
@@ -42,6 +44,7 @@ public class MainFrame extends JFrame {
     private DefaultTableModel estoquesModel;
     private DefaultTableModel custosModel;
     private DefaultTableModel acessosModel;
+    private DefaultTableModel vendasModel;
 
     public MainFrame(LoginResponse loginResponse) {
         this.loginResponse = loginResponse;
@@ -68,6 +71,7 @@ public class MainFrame extends JFrame {
         tabbedPane.addTab("Preços", createPrecosPanel());
         tabbedPane.addTab("Estoque", createEstoquesPanel());
         tabbedPane.addTab("Custos", createCustosPanel());
+        tabbedPane.addTab("Vendas", createVendasPanel());
         tabbedPane.addTab("Acessos", createAcessosPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
@@ -203,6 +207,21 @@ public class MainFrame extends JFrame {
         custosModel = new DefaultTableModel(new String[]{"ID","Imposto","Frete","Seguro","Custo Var","Custo Fixo","Margem","Tipo"},0);
         JTable tabela = new JTable(custosModel); tabela.setName("custosTable"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
         carregarCustos(); return panel;
+    }
+
+    private JPanel createVendasPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10,10)); panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10)); panel.setBackground(new Color(236,240,241));
+        JPanel bp = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton add = new JButton("+ Adicionar"); add.addActionListener(e -> adicionarVenda());
+        JButton edit = new JButton("✎ Editar"); edit.addActionListener(e -> editarVenda());
+        JButton del = new JButton("🗑 Deletar"); del.addActionListener(e -> deletarVenda());
+        JButton boleto = new JButton("📄 Gerar Boleto"); boleto.addActionListener(e -> gerarBoleto());
+        JButton ref = new JButton("🔄 Atualizar"); ref.addActionListener(e -> carregarVendas());
+        bp.add(add); bp.add(edit); bp.add(del); bp.add(boleto); bp.add(ref);
+        panel.add(bp, BorderLayout.NORTH);
+        vendasModel = new DefaultTableModel(new String[]{"ID","Descrição","Quantidade","V. Unitário","V. Total","Data","Hora","Combustível","Tipo Preço"},0);
+        JTable tabela = new JTable(vendasModel); tabela.setName("tabelaVendas"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
+        carregarVendas(); return panel;
     }
 
     private JPanel createAcessosPanel() {
@@ -592,7 +611,7 @@ public class MainFrame extends JFrame {
             @Override protected void done() {
                 try {
                     String res = get(); if (res==null) return;
-                    String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items==null||items.length==0) items = JsonParser.extractJsonArrayItems(res,null);
+                    String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items==null||items.length==0) items = JsonParser.extractJsonArrayItems(res, null);
                     if (items==null) return;
                     for (String it: items) {
                         if (it==null||it.trim().isEmpty()) continue;
@@ -625,6 +644,126 @@ public class MainFrame extends JFrame {
                 try { String res = get(); if (res==null) return; String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items==null||items.length==0) items = JsonParser.extractJsonArrayItems(res,null); if (items==null) return; for (String it: items) { if (it==null||it.trim().isEmpty()) continue; Custo c = JsonParser.parseCusto(it); if (c==null) continue; custosModel.addRow(new Object[]{normalizeIdForModel(c.getId()), c.getImposto(), c.getFrete(), c.getSeguro(), c.getCustoVariavel(), c.getCustoFixo(), c.getMargemLucro(), c.getTipoCusto()}); } if (statusLabel!=null) statusLabel.setText("Conectado | Custos: "+custosModel.getRowCount()); } catch (Exception ex) { System.err.println("Erro carregarCustos: "+ex.getMessage()); }
             }
         }.execute();
+    }
+
+    private void carregarVendas() {
+        if (vendasModel==null) return; vendasModel.setRowCount(0);
+        new SwingWorker<String,Void>(){
+            @Override protected String doInBackground() throws Exception { return VendaService.list(0,50); }
+            @Override protected void done() {
+                try { String res = get(); if (res==null) return; String[] items = JsonParser.extractJsonArrayItems(res,"content"); if (items==null||items.length==0) items = JsonParser.extractJsonArrayItems(res,null); if (items==null) return; for (String it: items) { if (it==null||it.trim().isEmpty()) continue; Venda v = JsonParser.parseVenda(it); if (v==null) continue; vendasModel.addRow(new Object[]{normalizeIdForModel(v.getId()), v.getDescricaoProduto(), v.getQuantidade(), v.getValorUnitario(), v.getValorTotal(), v.getDataVenda(), v.getHoraVenda(), v.getTipoCombustivel(), v.getTipoPreco()}); } if (statusLabel!=null) statusLabel.setText("Conectado | Vendas: "+vendasModel.getRowCount()); } catch (Exception ex) { System.err.println("Erro carregarVendas: "+ex.getMessage()); }
+            }
+        }.execute();
+    }
+
+    private void adicionarVenda() {
+        try { Venda novo = CrudDialog.showVendaDialog(this, null, "Adicionar Venda"); if (novo == null) return; String resp = VendaService.create(novo); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro criando venda: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Venda criada.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao criar venda: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarVendas(); }
+    }
+
+    private void editarVenda() {
+        JTable t = findTableByName("tabelaVendas"); if (t == null) return; int sel = t.getSelectedRow(); if (sel == -1) { JOptionPane.showMessageDialog(this, "Selecione uma venda.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        int msel = t.convertRowIndexToModel(sel); Object idObj = vendasModel.getValueAt(msel,0); Long id = parseLongFromObject(idObj); if (id == null) { JOptionPane.showMessageDialog(this, "Item sem ID.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
+        Venda orig = new Venda(); orig.setId(id); orig.setDescricaoProduto(stringValueForModel(vendasModel.getValueAt(msel,1)));
+        Venda edited = CrudDialog.showVendaDialog(this, orig, "Editar Venda"); if (edited == null) return; try { String resp = VendaService.update(edited.getId(), edited); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Venda atualizada.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao salvar venda: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarVendas(); }
+    }
+
+    private void deletarVenda() {
+        JTable t = findTableByName("tabelaVendas"); if (t == null) return; int sel = t.getSelectedRow(); if (sel == -1) { JOptionPane.showMessageDialog(this, "Selecione uma venda.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        int msel = t.convertRowIndexToModel(sel); Object idObj = vendasModel.getValueAt(msel,0); Long id = parseLongFromObject(idObj); if (id == null) { JOptionPane.showMessageDialog(this, "Item sem ID.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
+        if (!CrudDialog.showConfirmDeleteDialog(this, "Venda id="+id)) return; try { String resp = VendaService.delete(id); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Venda deletada.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao deletar venda: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarVendas(); }
+    }
+
+    private void gerarBoleto() {
+        JTable t = findTableByName("tabelaVendas");
+        if (t == null) return;
+        int sel = t.getSelectedRow();
+        if (sel == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione uma venda.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int msel = t.convertRowIndexToModel(sel);
+        Object idObj = vendasModel.getValueAt(msel, 0);
+        Long id = parseLongFromObject(idObj);
+        if (id == null) {
+            JOptionPane.showMessageDialog(this, "Venda sem ID.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Capturar dados da venda
+        String descricao = stringValueForModel(vendasModel.getValueAt(msel, 1));
+        String quantidade = stringValueForModel(vendasModel.getValueAt(msel, 2));
+        String valorUnitario = stringValueForModel(vendasModel.getValueAt(msel, 3));
+        String valorTotal = stringValueForModel(vendasModel.getValueAt(msel, 4));
+        String data = stringValueForModel(vendasModel.getValueAt(msel, 5));
+        String hora = stringValueForModel(vendasModel.getValueAt(msel, 6));
+
+        // Solicitar nome do cliente
+        String cliente = JOptionPane.showInputDialog(this,
+            "Digite o nome do cliente para o boleto:",
+            "Gerador de Boleto",
+            JOptionPane.PLAIN_MESSAGE);
+
+        if (cliente == null || cliente.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nome do cliente é obrigatório.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            // Gerar conteúdo do boleto
+            String conteudoBoleto = com.br.pdvpostocombustivelfrontend.frontend.util.BoletoGerador.gerarBoleto(
+                id.toString(),
+                descricao,
+                valorTotal,
+                data,
+                hora,
+                cliente
+            );
+
+            // Mostrar em diálogo
+            JTextArea textArea = new JTextArea(conteudoBoleto);
+            textArea.setEditable(false);
+            textArea.setFont(new java.awt.Font("Courier New", java.awt.Font.PLAIN, 11));
+            textArea.setLineWrap(false);
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new java.awt.Dimension(900, 600));
+
+            int opcao = JOptionPane.showOptionDialog(
+                this,
+                scrollPane,
+                "Boleto - Venda #" + id,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[]{"Salvar", "Copiar", "Cancelar"},
+                "Salvar"
+            );
+
+            if (opcao == 0) {
+                // Salvar em arquivo
+                javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+                fileChooser.setSelectedFile(new java.io.File("boleto_venda_" + id + ".txt"));
+                int result = fileChooser.showSaveDialog(this);
+
+                if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+                    String caminho = fileChooser.getSelectedFile().getAbsolutePath();
+                    if (com.br.pdvpostocombustivelfrontend.frontend.util.BoletoGerador.salvarBoleto(caminho, conteudoBoleto)) {
+                        JOptionPane.showMessageDialog(this, "Boleto salvo com sucesso!\n" + caminho, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Erro ao salvar o boleto.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } else if (opcao == 1) {
+                // Copiar para clipboard
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                    new java.awt.datatransfer.StringSelection(conteudoBoleto),
+                    null
+                );
+                JOptionPane.showMessageDialog(this, "Boleto copiado para a área de transferência!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao gerar boleto: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void logout() { int ok = JOptionPane.showConfirmDialog(this, "Deseja sair?", "Sair", JOptionPane.YES_NO_OPTION); if (ok==JOptionPane.YES_OPTION) dispose(); }

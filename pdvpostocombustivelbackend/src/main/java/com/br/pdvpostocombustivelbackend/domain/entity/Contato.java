@@ -27,6 +27,10 @@ public class Contato {
     @Column(length = 10, nullable = false)
     private TipoContato tipoContato;
 
+    @ManyToOne
+    @JoinColumn(name = "pessoa_id")
+    private Pessoa pessoa;
+
     protected Contato() {}
 
     public Contato(String telefone, String email, String endereco, TipoContato tipoContato) {
@@ -75,5 +79,8 @@ public class Contato {
     public void setTipoContato(TipoContato tipoContato) {
         this.tipoContato = tipoContato;
     }
+
+    public Pessoa getPessoa() { return pessoa; }
+    public void setPessoa(Pessoa pessoa) { this.pessoa = pessoa; }
 
 }

@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "estoques")
@@ -32,6 +34,9 @@ public class Estoque {
     @Enumerated(EnumType.STRING)
     @Column(length = 10, nullable = false)
     private TipoEstoque tipoEstoque;
+
+    @OneToMany(mappedBy = "estoque", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Venda> vendas = new ArrayList<>();
 
     protected Estoque() {}
 
@@ -101,4 +106,6 @@ public class Estoque {
         this.tipoEstoque = tipoEstoque;
     }
 
+    public List<Venda> getVendas() { return vendas; }
+    public void setVendas(List<Venda> vendas) { this.vendas = vendas; }
 }

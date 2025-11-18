@@ -489,4 +489,31 @@ public class JsonParser {
             return a;
         } catch (Exception e) { return null; }
     }
+
+    /**
+     * Converte JSON para Venda
+     */
+    public static com.br.pdvpostocombustivelfrontend.frontend.model.Venda parseVenda(String json) {
+        try {
+            com.br.pdvpostocombustivelfrontend.frontend.model.Venda v = new com.br.pdvpostocombustivelfrontend.frontend.model.Venda();
+
+            String id = extractValue(json, "id");
+            if (id != null && !id.isEmpty()) {
+                try { v.setId(Long.parseLong(id)); } catch (Exception ex) { /* ignore */ }
+            }
+
+            v.setDescricaoProduto(extractValue(json, "descricaoProduto"));
+            v.setQuantidade(extractValue(json, "quantidade"));
+            v.setValorUnitario(extractValue(json, "valorUnitario"));
+            v.setValorTotal(extractValue(json, "valorTotal"));
+            v.setDataVenda(extractValue(json, "dataVenda"));
+            v.setHoraVenda(extractValue(json, "horaVenda"));
+            v.setTipoPreco(extractValueFallback(json, "tipoPreco", "tipo_preco"));
+            v.setTipoCombustivel(extractValueFallback(json, "tipoCombustivel", "tipo_combustivel"));
+            v.setObservacoes(extractValue(json, "observacoes"));
+
+            return v;
+        } catch (Exception e) { return null; }
+    }
 }
+

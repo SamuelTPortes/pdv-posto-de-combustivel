@@ -22,6 +22,10 @@ public class Preco {
     @Column(length = 20, nullable = false)
     private TipoPreco tipoPreco;
 
+    @ManyToOne
+    @JoinColumn(name = "produto_id")
+    private Produto produto;
+
     protected Preco(){}
 
     public Preco(BigDecimal valor, Date dataAlteracao, Date horaAlteracao, TipoPreco tipoPreco) {
@@ -71,5 +75,6 @@ public class Preco {
         this.tipoPreco = tipoPreco;
     }
 
-
+    public Produto getProduto() { return produto; }
+    public void setProduto(Produto produto) { this.produto = produto; }
 }

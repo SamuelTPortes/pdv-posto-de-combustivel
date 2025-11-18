@@ -32,6 +32,10 @@ public class Acesso {
     @Column(length = 30, nullable = false)
     private TipoAcesso tipoAcesso;
 
+    @ManyToOne
+    @JoinColumn(name = "pessoa_id")
+    private Pessoa pessoa;
+
     public String getUsuario() {
         return usuario;
     }
@@ -64,5 +68,6 @@ public class Acesso {
         this.senha = senha;
     }
 
-
+    public Pessoa getPessoa() { return pessoa; }
+    public void setPessoa(Pessoa pessoa) { this.pessoa = pessoa; }
 }

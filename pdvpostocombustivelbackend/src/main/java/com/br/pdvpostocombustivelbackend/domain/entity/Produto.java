@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "produtos")
@@ -30,6 +32,9 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)
     private TipoProduto tipoProduto;
+
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Preco> precos = new ArrayList<>();
 
     protected Produto() {}
 
@@ -91,5 +96,6 @@ public class Produto {
         this.tipoProduto = tipoProduto;
     }
 
-
+    public List<Preco> getPrecos() { return precos; }
+    public void setPrecos(List<Preco> precos) { this.precos = precos; }
 }

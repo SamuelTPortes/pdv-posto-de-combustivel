@@ -5,7 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 
 import java.time.LocalDate;
-import java.util.Timer;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "pessoa")
@@ -33,6 +34,12 @@ public class Pessoa{
     @Enumerated(EnumType.STRING) //Tipo enum
     @Column(name = "tipo_pessoa", length = 15, nullable = false)
     private TipoPessoa tipoPessoa;
+
+    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Contato> contatos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Acesso> acessos = new ArrayList<>();
 
     //construtor
     public Pessoa (String nomeCompleto,
@@ -100,4 +107,10 @@ public class Pessoa{
     public void setNumeroCtps(Long numeroCtps){
         this.numeroCtps = numeroCtps;
     }
+
+    public List<Contato> getContatos() { return contatos; }
+    public void setContatos(List<Contato> contatos) { this.contatos = contatos; }
+
+    public List<Acesso> getAcessos() { return acessos; }
+    public void setAcessos(List<Acesso> acessos) { this.acessos = acessos; }
 }
