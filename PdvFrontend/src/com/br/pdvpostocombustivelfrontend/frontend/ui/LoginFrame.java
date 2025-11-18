@@ -31,7 +31,7 @@ public class LoginFrame extends JFrame {
         // Configurações da janela
         setTitle(AppConfig.APP_TITLE + " - Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(450, 350);
+        setSize(1200, 700);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -53,17 +53,18 @@ public class LoginFrame extends JFrame {
         };
         mainPanel.setLayout(new GridBagLayout());
 
-        // Painel de login
+        // Painel de login (centralizado)
         JPanel loginPanel = new JPanel();
         loginPanel.setBackground(Color.WHITE);
         loginPanel.setLayout(new BoxLayout(loginPanel, BoxLayout.Y_AXIS));
         loginPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
-                BorderFactory.createEmptyBorder(30, 40, 30, 40)
+                BorderFactory.createEmptyBorder(30, 60, 30, 60)
         ));
+        loginPanel.setMaximumSize(new Dimension(500, 400));
 
         // Logo/Título
-        JLabel titleLabel = new JLabel("🚗 PDV - Posto de Combustível");
+        JLabel titleLabel = new JLabel("PDV - Posto de Combustível");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(new Color(52, 73, 94));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -73,27 +74,43 @@ public class LoginFrame extends JFrame {
         subtitleLabel.setForeground(new Color(127, 140, 141));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Campo de usuário
+        // Painel para usuário (centralizado)
+        JPanel usuarioPanel = new JPanel();
+        usuarioPanel.setBackground(Color.WHITE);
+        usuarioPanel.setLayout(new BoxLayout(usuarioPanel, BoxLayout.Y_AXIS));
+        usuarioPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel usuarioLabel = new JLabel("Usuário:");
         usuarioLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        usuarioLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usuarioLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        usuarioField = new JTextField(20);
+        usuarioField = new JTextField(25);
         usuarioField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        usuarioField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        usuarioField.setMaximumSize(new Dimension(300, 35));
+        usuarioField.setAlignmentX(Component.CENTER_ALIGNMENT);
         usuarioField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(189, 195, 199)),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
 
-        // Campo de senha
+        usuarioPanel.add(usuarioLabel);
+        usuarioPanel.add(Box.createVerticalStrut(5));
+        usuarioPanel.add(usuarioField);
+
+        // Painel para senha (centralizado)
+        JPanel senhaPanel = new JPanel();
+        senhaPanel.setBackground(Color.WHITE);
+        senhaPanel.setLayout(new BoxLayout(senhaPanel, BoxLayout.Y_AXIS));
+        senhaPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         JLabel senhaLabel = new JLabel("Senha:");
         senhaLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        senhaLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        senhaLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        senhaField = new JPasswordField(20);
+        senhaField = new JPasswordField(25);
         senhaField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        senhaField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        senhaField.setMaximumSize(new Dimension(300, 35));
+        senhaField.setAlignmentX(Component.CENTER_ALIGNMENT);
         senhaField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(189, 195, 199)),
                 BorderFactory.createEmptyBorder(5, 10, 5, 10)
@@ -108,6 +125,10 @@ public class LoginFrame extends JFrame {
                 }
             }
         });
+
+        senhaPanel.add(senhaLabel);
+        senhaPanel.add(Box.createVerticalStrut(5));
+        senhaPanel.add(senhaField);
 
         // Painel de botões
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
@@ -152,19 +173,18 @@ public class LoginFrame extends JFrame {
         loginPanel.add(titleLabel);
         loginPanel.add(Box.createVerticalStrut(5));
         loginPanel.add(subtitleLabel);
+        loginPanel.add(Box.createVerticalStrut(40));
+        loginPanel.add(usuarioPanel);
+        loginPanel.add(Box.createVerticalStrut(20));
+        loginPanel.add(senhaPanel);
         loginPanel.add(Box.createVerticalStrut(30));
-        loginPanel.add(usuarioLabel);
-        loginPanel.add(Box.createVerticalStrut(5));
-        loginPanel.add(usuarioField);
-        loginPanel.add(Box.createVerticalStrut(15));
-        loginPanel.add(senhaLabel);
-        loginPanel.add(Box.createVerticalStrut(5));
-        loginPanel.add(senhaField);
-        loginPanel.add(Box.createVerticalStrut(25));
         loginPanel.add(buttonPanel);
 
-        // Adicionar ao painel principal
-        mainPanel.add(loginPanel);
+        // Adicionar ao painel principal (centralizado)
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        mainPanel.add(loginPanel, gbc);
 
         // Adicionar à janela
         add(mainPanel);
