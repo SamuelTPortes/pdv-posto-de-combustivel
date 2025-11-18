@@ -41,11 +41,13 @@ public class MainFrame extends JFrame {
     private DefaultTableModel precosModel;
     private DefaultTableModel estoquesModel;
     private DefaultTableModel custosModel;
+    private DefaultTableModel acessosModel;
 
     public MainFrame(LoginResponse loginResponse) {
         this.loginResponse = loginResponse;
         initComponents();
         startClock();
+        carregarAcessos();
     }
 
     // ---------------- UI creation ----------------
@@ -212,8 +214,8 @@ public class MainFrame extends JFrame {
         JButton ref = new JButton("🔄 Atualizar"); ref.addActionListener(e -> carregarAcessos());
         bp.add(add); bp.add(edit); bp.add(del); bp.add(ref);
         panel.add(bp, BorderLayout.NORTH);
-        DefaultTableModel model = new DefaultTableModel(new String[]{"ID","Usuário","Data Acesso","Hora Acesso","Tipo Acesso"},0);
-        JTable tabela = new JTable(model); tabela.setName("tabelaAcessos"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
+        acessosModel = new DefaultTableModel(new String[]{"ID","Usuário","Data Acesso","Hora Acesso","Tipo Acesso"},0);
+        JTable tabela = new JTable(acessosModel); tabela.setName("tabelaAcessos"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
         carregarAcessos(); return panel;
     }
 
@@ -338,8 +340,8 @@ public class MainFrame extends JFrame {
 
     // ----------------- Acesso handlers -----------------
     private void carregarAcessos() {
-        JTable tabela = findTableByName("tabelaAcessos"); if (tabela == null) return;
-        DefaultTableModel model = (DefaultTableModel) tabela.getModel(); model.setRowCount(0);
+        if (acessosModel == null) return;
+        acessosModel.setRowCount(0);
         new SwingWorker<String, Void>() {
             @Override protected String doInBackground() throws Exception { return AcessoService.list(0,50); }
             @Override protected void done() {
@@ -350,14 +352,16 @@ public class MainFrame extends JFrame {
                         if (it==null||it.trim().isEmpty()) continue;
                         Acesso a = JsonParser.parseAcesso(it);
                         String usuario = (a!=null)?a.getUsuario():JsonParser.extractJsonValue(it,"usuario");
-                        Long id = (a!=null)?a.getId():JsonParser.extractLongFallback(it,"id","acessoId","acesso_id","codigo","usuarioId");
+                        Long id = (a!=null && a.getId()!=null)?a.getId():JsonParser.extractLongFallback(it,"id","acessoId","acesso_id","codigo","usuarioId");
                         if (id==null) { Long r = resolveAcessoIdByUsuario(usuario); if (r!=null) id=r; }
+                        // Garante que o ID nunca fica vazio na tabela
+                        if (id==null) { System.err.println("AVISO: Acesso sem ID encontrado: usuario="+usuario); continue; }
                         String date = JsonParser.formatDate(JsonParser.extractJsonValue(it,"dataAcesso"));
                         String time = JsonParser.formatTime(JsonParser.extractJsonValue(it,"horaAcesso"));
-                        model.addRow(new Object[]{normalizeIdForModel(id), usuario, date, time, (a!=null?a.getTipoAcesso():null)});
+                        acessosModel.addRow(new Object[]{normalizeIdForModel(id), usuario, date, time, (a!=null?a.getTipoAcesso():null)});
                     }
-                    if (statusLabel!=null) statusLabel.setText("Conectado | Acessos: "+model.getRowCount());
-                } catch (Exception e) { System.err.println("Erro ao carregar acessos: "+e.getMessage()); }
+                    if (statusLabel!=null) statusLabel.setText("Conectado | Acessos: "+acessosModel.getRowCount());
+                } catch (Exception e) { System.err.println("Erro ao carregar acessos: "+e.getMessage()); e.printStackTrace(); }
             }
         }.execute();
     }
@@ -368,27 +372,71 @@ public class MainFrame extends JFrame {
 
     private void editarAcesso() {
         JTable t = findTableByName("tabelaAcessos"); if (t==null) return; int sel = t.getSelectedRow(); if (sel==-1) { JOptionPane.showMessageDialog(this,"Selecione um acesso.","Aviso",JOptionPane.WARNING_MESSAGE); return; }
-        int msel = t.convertRowIndexToModel(sel); DefaultTableModel model = (DefaultTableModel) t.getModel(); Object idObj = model.getValueAt(msel,0); Long id = parseLongFromObject(idObj);
-        if (id==null) { Object usuarioObj = model.getValueAt(msel,1); String usuario = usuarioObj!=null?usuarioObj.toString():null; id = resolveAcessoIdByUsuario(usuario); if (id!=null) model.setValueAt(normalizeIdForModel(id), msel,0); }
-        if (id==null) { JOptionPane.showMessageDialog(this,"Item sem ID.","Erro",JOptionPane.ERROR_MESSAGE); return; }
+        int msel = t.convertRowIndexToModel(sel);
+        Object idObj = acessosModel.getValueAt(msel,0);
+        Long id = parseLongFromObject(idObj);
+
+        if (id==null) {
+            Object usuarioObj = acessosModel.getValueAt(msel,1);
+            String usuario = usuarioObj!=null?usuarioObj.toString():null;
+            id = resolveAcessoIdByUsuario(usuario);
+            if (id!=null) acessosModel.setValueAt(normalizeIdForModel(id), msel,0);
+        }
+
+        if (id==null) {
+            JOptionPane.showMessageDialog(this,"Erro: Item sem ID válido. Tente recarregar a lista.","Erro",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         final Long idFinal = id;
         new SwingWorker<String,Void>(){
             @Override protected String doInBackground() throws Exception { return AcessoService.getById(idFinal); }
             @Override protected void done() {
                 try {
-                    String json = get(); Acesso orig = null; if (json!=null && !json.trim().isEmpty() && !JsonParser.isError(json)) orig = JsonParser.parseAcesso(json); if (orig==null) orig=new Acesso(); if (orig.getId()==null) orig.setId(idFinal);
+                    String json = get();
+                    Acesso orig = null;
+                    if (json!=null && !json.trim().isEmpty() && !JsonParser.isError(json)) orig = JsonParser.parseAcesso(json);
+                    if (orig==null) orig=new Acesso();
+                    if (orig.getId()==null) orig.setId(idFinal);
                     openEditDialogAndUpdate(orig, idFinal);
-                } catch (Exception e) { JOptionPane.showMessageDialog(MainFrame.this,"Erro ao carregar acesso: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE); carregarAcessos(); }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(MainFrame.this,"Erro ao carregar acesso: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);
+                    carregarAcessos();
+                }
             }
         }.execute();
     }
 
     private void deletarAcesso() {
         JTable t = findTableByName("tabelaAcessos"); if (t==null) return; int sel = t.getSelectedRow(); if (sel==-1) { JOptionPane.showMessageDialog(this,"Selecione um acesso.","Aviso",JOptionPane.WARNING_MESSAGE); return; }
-        int msel = t.convertRowIndexToModel(sel); DefaultTableModel model = (DefaultTableModel) t.getModel(); Object idObj = model.getValueAt(msel,0); Long id = parseLongFromObject(idObj);
-        if (id==null) { Object usuarioObj = model.getValueAt(msel,1); String usuario = usuarioObj!=null?usuarioObj.toString():null; id = resolveAcessoIdByUsuario(usuario); if (id!=null) model.setValueAt(normalizeIdForModel(id), msel,0); }
-        if (id==null) { JOptionPane.showMessageDialog(this,"Item sem ID.","Erro",JOptionPane.ERROR_MESSAGE); return; }
-        if (!CrudDialog.showConfirmDeleteDialog(this,"Acesso id="+id)) return; try { String resp = AcessoService.delete(id); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this,"Erro ao deletar acesso: "+JsonParser.extractJsonValue(resp,"message"),"Erro",JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this,"Acesso deletado.","Sucesso",JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this,"Erro ao deletar acesso: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE); } finally { carregarAcessos(); }
+        int msel = t.convertRowIndexToModel(sel);
+        Object idObj = acessosModel.getValueAt(msel,0);
+        Long id = parseLongFromObject(idObj);
+
+        if (id==null) {
+            Object usuarioObj = acessosModel.getValueAt(msel,1);
+            String usuario = usuarioObj!=null?usuarioObj.toString():null;
+            id = resolveAcessoIdByUsuario(usuario);
+            if (id!=null) acessosModel.setValueAt(normalizeIdForModel(id), msel,0);
+        }
+
+        if (id==null) {
+            JOptionPane.showMessageDialog(this,"Erro: Item sem ID válido. Tente recarregar a lista.","Erro",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!CrudDialog.showConfirmDeleteDialog(this,"Acesso id="+id)) return;
+        try {
+            String resp = AcessoService.delete(id);
+            if (JsonParser.isError(resp))
+                JOptionPane.showMessageDialog(this,"Erro ao deletar acesso: "+JsonParser.extractJsonValue(resp,"message"),"Erro",JOptionPane.ERROR_MESSAGE);
+            else
+                JOptionPane.showMessageDialog(this,"Acesso deletado.","Sucesso",JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,"Erro ao deletar acesso: "+e.getMessage(),"Erro",JOptionPane.ERROR_MESSAGE);
+        } finally {
+            carregarAcessos();
+        }
     }
 
     // ----------------- Helpers -----------------
@@ -408,14 +456,39 @@ public class MainFrame extends JFrame {
     private Long resolveAcessoIdByUsuario(String usuario) {
         if (usuario==null || usuario.trim().isEmpty()) return null;
         try {
+            System.out.println("DEBUG: Resolvendo ID para usuario: " + usuario);
             String found = AcessoService.findByUsuario(usuario);
-            if (found==null || found.trim().isEmpty()) return null;
-            if (JsonParser.isError(found)) return null;
-            Long id = JsonParser.extractLongFallback(found, "id","acessoId","acesso_id","codigo"); if (id!=null) return id;
-            Acesso p = JsonParser.parseAcesso(found); if (p!=null && p.getId()!=null) return p.getId();
+            if (found==null || found.trim().isEmpty()) {
+                System.err.println("DEBUG: Nenhum resultado encontrado para usuario: " + usuario);
+                return null;
+            }
+            if (JsonParser.isError(found)) {
+                System.err.println("DEBUG: Erro na resposta: " + found);
+                return null;
+            }
+            Long id = JsonParser.extractLongFallback(found, "id","acessoId","acesso_id","codigo");
+            if (id!=null) {
+                System.out.println("DEBUG: ID encontrado via extractLongFallback: " + id);
+                return id;
+            }
+            Acesso p = JsonParser.parseAcesso(found);
+            if (p!=null && p.getId()!=null) {
+                System.out.println("DEBUG: ID encontrado via parseAcesso: " + p.getId());
+                return p.getId();
+            }
             Matcher m = Pattern.compile("\\\"id\\\"\\s*:\\s*(\\d+)").matcher(found);
-            if (m.find()) { try { return Long.parseLong(m.group(1)); } catch (Exception ignored) {} }
-        } catch (Exception e) { System.err.println("DEBUG resolveAcessoIdByUsuario: "+e.getMessage()); }
+            if (m.find()) {
+                try {
+                    Long result = Long.parseLong(m.group(1));
+                    System.out.println("DEBUG: ID encontrado via regex: " + result);
+                    return result;
+                } catch (Exception ignored) {}
+            }
+            System.err.println("DEBUG: Não foi possível extrair ID de: " + found);
+        } catch (Exception e) {
+            System.err.println("DEBUG resolveAcessoIdByUsuario: "+e.getMessage());
+            e.printStackTrace();
+        }
         return null;
     }
 

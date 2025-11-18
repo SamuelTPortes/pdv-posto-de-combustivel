@@ -31,6 +31,12 @@ public class AcessoController {
         return service.create(req);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Buscar acesso por usuário", description = "Retorna um acesso pelo nome de usuário")
+    public AcessoResponse findByUsuario(@RequestParam String usuario) {
+        return service.getByCpfCnpj(usuario);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar acesso por ID", description = "Retorna um acesso específico pelo ID")
     public AcessoResponse get(@PathVariable Long id) {

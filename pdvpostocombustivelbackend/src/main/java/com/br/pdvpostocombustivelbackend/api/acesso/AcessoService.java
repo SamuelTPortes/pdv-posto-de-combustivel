@@ -122,8 +122,10 @@ public class AcessoService {
 
     private AcessoResponse toResponse(Acesso p) {
         return new AcessoResponse(
+                p.getId(),
                 p.getUsuario(),
-                p.getSenha()
+                p.getSenha(),
+                p.getTipoAcesso() != null ? p.getTipoAcesso().toString() : null
         );
     }
 }
