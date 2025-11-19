@@ -35,8 +35,14 @@ public class Pessoa{
     @Column(name = "tipo_pessoa", length = 15, nullable = false)
     private TipoPessoa tipoPessoa;
 
-    @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Contato> contatos = new ArrayList<>();
+    @Column(name = "email", length = 70)
+    private String email;
+
+    @Column(name = "telefone", length = 20)
+    private String telefone;
+
+    @Column(name = "endereco", length = 70)
+    private String endereco;
 
     @OneToMany(mappedBy = "pessoa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Acesso> acessos = new ArrayList<>();
@@ -46,13 +52,18 @@ public class Pessoa{
                    String cpfCnpj,
                    LocalDate dataNascimento,
                    Long numeroCtps,
-                   TipoPessoa tipoPessoa){
+                   TipoPessoa tipoPessoa,
+                   String email,
+                   String telefone,
+                   String endereco){
         this.nomeCompleto = nomeCompleto;
         this.cpfCnpj = cpfCnpj;
         this.numeroCtps = numeroCtps;
         this.dataNascimento = dataNascimento;
         this.tipoPessoa = tipoPessoa;
-
+        this.email = email;
+        this.telefone = telefone;
+        this.endereco = endereco;
     }
     //construtor vazio
     public Pessoa(){
@@ -83,6 +94,30 @@ public class Pessoa{
         return tipoPessoa;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(String endereco) {
+        this.endereco = endereco;
+    }
+
     public void setTipoPessoa(TipoPessoa tipoPessoa) {
         this.tipoPessoa = tipoPessoa;
     }
@@ -108,8 +143,7 @@ public class Pessoa{
         this.numeroCtps = numeroCtps;
     }
 
-    public List<Contato> getContatos() { return contatos; }
-    public void setContatos(List<Contato> contatos) { this.contatos = contatos; }
+
 
     public List<Acesso> getAcessos() { return acessos; }
     public void setAcessos(List<Acesso> acessos) { this.acessos = acessos; }

@@ -5,18 +5,10 @@ CREATE TABLE IF NOT EXISTS pessoa (
     cpf_cnpj VARCHAR(14) NOT NULL UNIQUE,
     numero_ctps BIGINT,
     data_nascimento DATE NOT NULL,
-    tipo_pessoa VARCHAR(15) NOT NULL
-);
-
--- Criação da tabela contato
-CREATE TABLE IF NOT EXISTS contato (
-    id BIGSERIAL PRIMARY KEY,
-    telefone VARCHAR(20) NOT NULL,
-    email VARCHAR(70) NOT NULL,
-    endereco VARCHAR(70) NOT NULL,
-    tipo_contato VARCHAR(10) NOT NULL,
-    pessoa_id BIGINT NOT NULL,
-    FOREIGN KEY (pessoa_id) REFERENCES pessoa(id) ON DELETE CASCADE
+    tipo_pessoa VARCHAR(15) NOT NULL,
+    email VARCHAR(70),
+    telefone VARCHAR(20),
+    endereco VARCHAR(70)
 );
 
 -- Criação da tabela acessos

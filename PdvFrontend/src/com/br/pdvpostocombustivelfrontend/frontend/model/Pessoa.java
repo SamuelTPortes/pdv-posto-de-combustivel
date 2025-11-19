@@ -10,6 +10,9 @@ public class Pessoa {
     private Long numeroCtps;
     private String dataNascimento;
     private String tipoPessoa;
+    private String email;
+    private String telefone;
+    private String endereco;
 
     public Pessoa() {}
 
@@ -38,6 +41,15 @@ public class Pessoa {
 
     public String getTipoPessoa() { return tipoPessoa; }
     public void setTipoPessoa(String tipoPessoa) { this.tipoPessoa = tipoPessoa; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getTelefone() { return telefone; }
+    public void setTelefone(String telefone) { this.telefone = telefone; }
+
+    public String getEndereco() { return endereco; }
+    public void setEndereco(String endereco) { this.endereco = endereco; }
 
     @Override
     public String toString() {

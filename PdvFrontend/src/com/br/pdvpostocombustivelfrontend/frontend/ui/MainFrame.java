@@ -1,22 +1,16 @@
 package com.br.pdvpostocombustivelfrontend.frontend.ui;
 
 import com.br.pdvpostocombustivelfrontend.frontend.config.AppConfig;
+import com.br.pdvpostocombustivelfrontend.frontend.model.Acesso;
+import com.br.pdvpostocombustivelfrontend.frontend.model.Custo;
 import com.br.pdvpostocombustivelfrontend.frontend.model.LoginResponse;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Pessoa;
-import com.br.pdvpostocombustivelfrontend.frontend.model.Produto;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Preco;
+import com.br.pdvpostocombustivelfrontend.frontend.model.Produto;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Estoque;
-import com.br.pdvpostocombustivelfrontend.frontend.model.Custo;
-import com.br.pdvpostocombustivelfrontend.frontend.model.Acesso;
 import com.br.pdvpostocombustivelfrontend.frontend.model.Venda;
-import com.br.pdvpostocombustivelfrontend.frontend.service.PessoaService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.CrudService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.PrecoService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.EstoqueService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.CustoService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.AcessoService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.ContatoService;
-import com.br.pdvpostocombustivelfrontend.frontend.service.VendaService;
+import com.br.pdvpostocombustivelfrontend.frontend.service.*;
+import com.br.pdvpostocombustivelfrontend.frontend.util.BoletoGerador;
 import com.br.pdvpostocombustivelfrontend.frontend.util.JsonParser;
 import com.br.pdvpostocombustivelfrontend.frontend.ui.CrudDialog;
 
@@ -39,7 +33,6 @@ public class MainFrame extends JFrame {
     // models / tables as instance fields to be reused
     private DefaultTableModel pessoasModel;
     private DefaultTableModel produtosModel;
-    private DefaultTableModel contatosModel;
     private DefaultTableModel precosModel;
     private DefaultTableModel estoquesModel;
     private DefaultTableModel custosModel;
@@ -63,16 +56,17 @@ public class MainFrame extends JFrame {
 
         add(createTopBar(), BorderLayout.NORTH);
 
+        // inicializa tabbedPane antes de adicionar abas
         tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Dashboard", createDashboardPanel());
+
+        // usar nomes de métodos conforme implementados (plural)
         tabbedPane.addTab("Pessoas", createPessoasPanel());
         tabbedPane.addTab("Produtos", createProdutosPanel());
-        tabbedPane.addTab("Contatos", createContatosPanel());
-        tabbedPane.addTab("Preços", createPrecosPanel());
-        tabbedPane.addTab("Estoque", createEstoquesPanel());
-        tabbedPane.addTab("Custos", createCustosPanel());
         tabbedPane.addTab("Vendas", createVendasPanel());
         tabbedPane.addTab("Acessos", createAcessosPanel());
+        tabbedPane.addTab("Preços", createPrecosPanel());
+        tabbedPane.addTab("Custos", createCustosPanel());
+        tabbedPane.addTab("Estoque", createEstoquesPanel());
 
         add(tabbedPane, BorderLayout.CENTER);
         add(createBottomBar(), BorderLayout.SOUTH);
@@ -100,6 +94,7 @@ public class MainFrame extends JFrame {
         logoutButton.setForeground(Color.WHITE);
         logoutButton.setFocusPainted(false);
         logoutButton.setBorderPainted(false);
+        logoutButton.setText("Deslogar");
         logoutButton.addActionListener(e -> logout());
 
         userPanel.add(userLabel);
@@ -151,20 +146,6 @@ public class MainFrame extends JFrame {
         produtosModel = new DefaultTableModel(new String[]{"ID","Nome","Ref","Fornecedor","Marca","Tipo"},0);
         JTable tabela = new JTable(produtosModel); tabela.setName("produtosTable"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
         carregarProdutos(); return panel;
-    }
-
-    private JPanel createContatosPanel() {
-        JPanel panel = new JPanel(new BorderLayout(10,10)); panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10)); panel.setBackground(new Color(236,240,241));
-        JPanel bp = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton add = new JButton("+ Adicionar"); add.addActionListener(e -> adicionarContato());
-        JButton edit = new JButton("✎ Editar"); edit.addActionListener(e -> editarContato());
-        JButton del = new JButton("🗑 Deletar"); del.addActionListener(e -> deletarContato());
-        JButton ref = new JButton("🔄 Atualizar"); ref.addActionListener(e -> carregarContatos());
-        bp.add(add); bp.add(edit); bp.add(del); bp.add(ref);
-        panel.add(bp, BorderLayout.NORTH);
-        contatosModel = new DefaultTableModel(new String[]{"ID","Endereço","Email","Telefone","Tipo"},0);
-        JTable tabela = new JTable(contatosModel); tabela.setName("contatosTable"); panel.add(new JScrollPane(tabela), BorderLayout.CENTER);
-        carregarContatos(); return panel;
     }
 
     private JPanel createPrecosPanel() {
@@ -292,22 +273,6 @@ public class MainFrame extends JFrame {
         if (!CrudDialog.showConfirmDeleteDialog(this, "Produto id="+id)) return; try { String resp = CrudService.deleteProduto(id); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Produto deletado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao deletar produto: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarProdutos(); }
     }
 
-    private void adicionarContato() {
-        try { com.br.pdvpostocombustivelfrontend.frontend.model.Contato novo = CrudDialog.showContatoDialog(this, null, "Adicionar Contato"); if (novo == null) return; String resp = ContatoService.create(novo); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro criando contato: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Contato criado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao criar contato: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarContatos(); }
-    }
-
-    private void editarContato() {
-        JTable t = findTableByName("contatosTable"); if (t == null) return; int sel = t.getSelectedRow(); if (sel == -1) { JOptionPane.showMessageDialog(this, "Selecione um contato.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        int msel = t.convertRowIndexToModel(sel); Object idObj = contatosModel.getValueAt(msel,0); Long id = parseLongFromObject(idObj); if (id == null) { JOptionPane.showMessageDialog(this, "Item sem ID.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-        com.br.pdvpostocombustivelfrontend.frontend.model.Contato orig = new com.br.pdvpostocombustivelfrontend.frontend.model.Contato(); orig.setId(id); orig.setEndereco(stringValueForModel(contatosModel.getValueAt(msel,1)));
-        com.br.pdvpostocombustivelfrontend.frontend.model.Contato edited = CrudDialog.showContatoDialog(this, orig, "Editar Contato"); if (edited == null) return; try { String resp = ContatoService.update(edited.getId(), edited); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Contato atualizado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao salvar contato: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarContatos(); }
-    }
-
-    private void deletarContato() {
-        JTable t = findTableByName("contatosTable"); if (t == null) return; int sel = t.getSelectedRow(); if (sel == -1) { JOptionPane.showMessageDialog(this, "Selecione um contato.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
-        int msel = t.convertRowIndexToModel(sel); Object idObj = contatosModel.getValueAt(msel,0); Long id = parseLongFromObject(idObj); if (id == null) { JOptionPane.showMessageDialog(this, "Item sem ID.", "Erro", JOptionPane.ERROR_MESSAGE); return; }
-        if (!CrudDialog.showConfirmDeleteDialog(this, "Contato id="+id)) return; try { String resp = ContatoService.delete(id); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Contato deletado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao deletar contato: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarContatos(); }
-    }
 
     private void adicionarPreco() {
         try { Preco novo = CrudDialog.showPrecoDialog(this, null, "Adicionar Preço"); if (novo == null) return; String resp = PrecoService.create(novo); if (JsonParser.isError(resp)) JOptionPane.showMessageDialog(this, "Erro criando preço: " + JsonParser.extractJsonValue(resp, "message"), "Erro", JOptionPane.ERROR_MESSAGE); else JOptionPane.showMessageDialog(this, "Preço criado.", "Sucesso", JOptionPane.INFORMATION_MESSAGE); } catch (Exception e) { JOptionPane.showMessageDialog(this, "Erro ao criar preço: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE); } finally { carregarPrecos(); }
@@ -497,17 +462,10 @@ public class MainFrame extends JFrame {
             }
             Matcher m = Pattern.compile("\\\"id\\\"\\s*:\\s*(\\d+)").matcher(found);
             if (m.find()) {
-                try {
-                    Long result = Long.parseLong(m.group(1));
-                    System.out.println("DEBUG: ID encontrado via regex: " + result);
-                    return result;
-                } catch (Exception ignored) {}
+                try { Long result = Long.parseLong(m.group(1)); return result; } catch (Exception ignored) {}
             }
             System.err.println("DEBUG: Não foi possível extrair ID de: " + found);
-        } catch (Exception e) {
-            System.err.println("DEBUG resolveAcessoIdByUsuario: "+e.getMessage());
-            e.printStackTrace();
-        }
+        } catch (Exception e) { System.err.println("DEBUG resolveAcessoIdByUsuario: "+e.getMessage()); e.printStackTrace(); }
         return null;
     }
 
@@ -579,27 +537,6 @@ public class MainFrame extends JFrame {
                     }
                     if (statusLabel!=null) statusLabel.setText("Conectado | Produtos: "+produtosModel.getRowCount());
                 } catch (Exception e) { System.err.println("Erro carregarProdutos: "+e.getMessage()); }
-            }
-        }.execute();
-    }
-
-    private void carregarContatos() {
-        if (contatosModel == null) return;
-        contatosModel.setRowCount(0);
-        new SwingWorker<String, Void>() {
-            @Override protected String doInBackground() throws Exception { return ContatoService.list(0,50); }
-            @Override protected void done() {
-                try {
-                    String res = get(); if (res==null) return;
-                    String[] items = JsonParser.extractJsonArrayItems(res, "content"); if (items==null||items.length==0) items = JsonParser.extractJsonArrayItems(res,null);
-                    if (items==null) return;
-                    for (String it: items) {
-                        if (it==null||it.trim().isEmpty()) continue;
-                        com.br.pdvpostocombustivelfrontend.frontend.model.Contato c = JsonParser.parseContato(it); if (c==null) continue;
-                        contatosModel.addRow(new Object[]{normalizeIdForModel(c.getId()), c.getEndereco(), c.getEmail(), c.getTelefone(), c.getTipoContato()});
-                    }
-                    if (statusLabel!=null) statusLabel.setText("Conectado | Contatos: "+contatosModel.getRowCount());
-                } catch (Exception e) { System.err.println("Erro carregarContatos: "+e.getMessage()); }
             }
         }.execute();
     }
@@ -766,5 +703,19 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private void logout() { int ok = JOptionPane.showConfirmDialog(this, "Deseja sair?", "Sair", JOptionPane.YES_NO_OPTION); if (ok==JOptionPane.YES_OPTION) dispose(); }
+    private void logout() {
+        int ok = JOptionPane.showConfirmDialog(this, "Deseja deslogar e voltar para a tela de login?", "Deslogar", JOptionPane.YES_NO_OPTION);
+        if (ok == JOptionPane.YES_OPTION) {
+            // Fecha a janela atual e abre a tela de login
+            dispose();
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    LoginFrame login = new LoginFrame();
+                    login.setVisible(true);
+                } catch (Exception ex) {
+                    System.err.println("Erro ao abrir LoginFrame após logout: " + ex.getMessage());
+                }
+            });
+        }
+    }
 }

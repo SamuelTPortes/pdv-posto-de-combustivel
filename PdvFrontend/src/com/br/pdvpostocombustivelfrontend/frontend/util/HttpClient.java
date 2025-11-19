@@ -56,7 +56,12 @@ public class HttpClient {
             }
             reader.close();
 
-            return response.toString();
+            String body = response.toString();
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new Exception("HTTP " + responseCode + ": " + body);
+            }
+
+            return body;
 
         } finally {
             connection.disconnect();
@@ -94,7 +99,12 @@ public class HttpClient {
             }
             reader.close();
 
-            return response.toString();
+            String body = response.toString();
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new Exception("HTTP " + responseCode + ": " + body);
+            }
+
+            return body;
 
         } finally {
             connection.disconnect();
@@ -140,7 +150,12 @@ public class HttpClient {
             }
             reader.close();
 
-            return response.toString();
+            String body = response.toString();
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new Exception("HTTP " + responseCode + ": " + body);
+            }
+
+            return body;
 
         } finally {
             connection.disconnect();
@@ -186,7 +201,12 @@ public class HttpClient {
             }
             reader.close();
 
-            return response.toString();
+            String body = response.toString();
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new Exception("HTTP " + responseCode + ": " + body);
+            }
+
+            return body;
 
         } finally {
             connection.disconnect();
@@ -228,11 +248,15 @@ public class HttpClient {
             }
             reader.close();
 
-            return response.toString();
+            String body = response.toString();
+            if (responseCode < 200 || responseCode >= 300) {
+                throw new Exception("HTTP " + responseCode + ": " + body);
+            }
+
+            return body;
 
         } finally {
             connection.disconnect();
         }
     }
 }
-

@@ -9,6 +9,7 @@ public class VendaService {
 
     public static String create(Venda v) throws Exception {
         String json = toJson(v);
+        System.out.println("DEBUG VendaService.create payload: " + json);
         return HttpClient.post(AppConfig.API_BASE_URL + "/vendas", json);
     }
 
@@ -34,12 +35,15 @@ public class VendaService {
 
     private static String toJson(Venda v) {
         StringBuilder json = new StringBuilder("{");
-       if (v.getDescricaoProduto() != null && !v.getDescricaoProduto().isEmpty())
+        if (v.getDescricaoProduto() != null && !v.getDescricaoProduto().isEmpty())
             json.append("\"descricaoProduto\":\"").append(escapeJson(v.getDescricaoProduto())).append("\",");
         if (v.getQuantidade() != null && !v.getQuantidade().isEmpty())
             json.append("\"quantidade\":").append(v.getQuantidade()).append(",");
         if (v.getValorUnitario() != null && !v.getValorUnitario().isEmpty())
             json.append("\"valorUnitario\":").append(v.getValorUnitario()).append(",");
+        // include valorTotal to make backend validation explicit
+        if (v.getValorTotal() != null && !v.getValorTotal().isEmpty())
+            json.append("\"valorTotal\":").append(v.getValorTotal()).append(",");
         if (v.getDataVenda() != null && !v.getDataVenda().isEmpty())
             json.append("\"dataVenda\":\"").append(v.getDataVenda()).append("\",");
         if (v.getHoraVenda() != null && !v.getHoraVenda().isEmpty())
@@ -66,4 +70,3 @@ public class VendaService {
             .replace("\t", "\\t");
     }
 }
-

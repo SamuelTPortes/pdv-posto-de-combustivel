@@ -79,6 +79,15 @@ public class JsonParser {
             String dataNascimento = extractValue(json, "dataNascimento");
             pessoa.setDataNascimento(dataNascimento);
 
+            String email = extractValue(json, "email");
+            pessoa.setEmail(email);
+
+            String telefone = extractValue(json, "telefone");
+            pessoa.setTelefone(telefone);
+
+            String endereco = extractValue(json, "endereco");
+            pessoa.setEndereco(endereco);
+
             return pessoa;
         } catch (Exception e) {
             return null;
@@ -118,29 +127,7 @@ public class JsonParser {
         }
     }
 
-    /**
-     * Converte JSON para Contato
-     */
-    public static com.br.pdvpostocombustivelfrontend.frontend.model.Contato parseContato(String json) {
-        try {
-            com.br.pdvpostocombustivelfrontend.frontend.model.Contato c = new com.br.pdvpostocombustivelfrontend.frontend.model.Contato();
-            String telefone = extractValue(json, "telefone");
-            String email = extractValue(json, "email");
-            String endereco = extractValue(json, "endereco");
-            String tipo = extractValue(json, "tipoContato");
-            c.setTelefone(telefone);
-            c.setEmail(email);
-            c.setEndereco(endereco);
-            c.setTipoContato(tipo);
-            String id = extractValue(json, "id");
-            if (id != null && !id.isEmpty()) {
-                try { c.setId(Long.parseLong(id)); } catch (Exception ex) {}
-            }
-            return c;
-        } catch (Exception e) {
-            return null;
-        }
-    }
+
 
     /**
      * Converte JSON para Preco

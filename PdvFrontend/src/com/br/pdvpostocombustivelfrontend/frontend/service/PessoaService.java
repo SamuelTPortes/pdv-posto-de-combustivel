@@ -75,6 +75,15 @@ public class PessoaService {
         if (pessoa.getTipoPessoa() != null) {
             json.append("\"tipoPessoa\":\"").append(pessoa.getTipoPessoa()).append("\",");
         }
+        if (pessoa.getEmail() != null) {
+            json.append("\"email\":\"").append(pessoa.getEmail()).append("\",");
+        }
+        if (pessoa.getTelefone() != null) {
+            json.append("\"telefone\":\"").append(pessoa.getTelefone()).append("\",");
+        }
+        if (pessoa.getEndereco() != null) {
+            json.append("\"endereco\":\"").append(pessoa.getEndereco()).append("\",");
+        }
 
         // Remove última vírgula
         if (json.length() > 1) {

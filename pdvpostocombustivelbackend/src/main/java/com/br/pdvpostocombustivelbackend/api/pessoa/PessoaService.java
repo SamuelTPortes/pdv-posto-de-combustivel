@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class PessoaService {
 
     // implementa a interface de pessoa
@@ -23,6 +22,7 @@ public class PessoaService {
     }
 
     // CREATE
+    @Transactional
     public PessoaResponse create(PessoaRequest req) {
 
         Pessoa nova = toEntity(req);
@@ -54,6 +54,7 @@ public class PessoaService {
     }
 
     // UPDATE - substitui todos os campos
+    @Transactional
     public PessoaResponse update(Long id, PessoaRequest req) {
         Pessoa p = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pessoa não encontrada. id=" + id));
@@ -66,11 +67,15 @@ public class PessoaService {
         p.setCpfCnpj(req.cpfCnpj());
         p.setNumeroCtps(req.numeroCtps());
         p.setDataNascimento(req.dataNascimento());
+        p.setEmail(req.email());
+        p.setTelefone(req.telefone());
+        p.setEndereco(req.endereco());
 
         return toResponse(repository.save(p));
     }
 
     // PATCH - atualiza apenas campos não nulos
+    @Transactional
     public PessoaResponse patch(Long id, PessoaRequest req) {
         Pessoa p = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pessoa não encontrada. id=" + id));
@@ -84,11 +89,15 @@ public class PessoaService {
         }
         if (req.numeroCtps() != null)    p.setNumeroCtps(req.numeroCtps());
         if (req.dataNascimento() != null) p.setDataNascimento(req.dataNascimento());
+        if (req.email() != null) p.setEmail(req.email());
+        if (req.telefone() != null) p.setTelefone(req.telefone());
+        if (req.endereco() != null) p.setEndereco(req.endereco());
 
         return toResponse(repository.save(p));
     }
 
     // DELETE
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Pessoa não encontrada. id=" + id);
@@ -111,7 +120,10 @@ public class PessoaService {
                 req.cpfCnpj(),
                 req.dataNascimento(),
                 req.numeroCtps(),
-                req.tipoPessoa()
+                req.tipoPessoa(),
+                req.email(),
+                req.telefone(),
+                req.endereco()
         );
     }
 
@@ -121,7 +133,11 @@ public class PessoaService {
                 p.getNomeCompleto(),
                 p.getCpfCnpj(),
                 p.getNumeroCtps(),
-                p.getDataNascimento()
+                p.getDataNascimento(),
+                p.getTipoPessoa(),
+                p.getEmail(),
+                p.getTelefone(),
+                p.getEndereco()
         );
     }
 }

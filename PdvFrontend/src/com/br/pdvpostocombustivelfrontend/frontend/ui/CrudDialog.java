@@ -17,13 +17,16 @@ public class CrudDialog {
      * Dialog para adicionar/editar pessoa
      */
     public static Pessoa showPessoaDialog(JFrame parent, Pessoa pessoa, String title) {
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JTextField nomeField = new JTextField(pessoa != null ? pessoa.getNomeCompleto() : "");
         JTextField cpfField = new JTextField(pessoa != null ? pessoa.getCpfCnpj() : "");
         JTextField ctpsField = new JTextField(pessoa != null ? (pessoa.getNumeroCtps() != null ? pessoa.getNumeroCtps().toString() : "") : "");
         JTextField dataNascField = new JTextField(pessoa != null ? pessoa.getDataNascimento() : "");
+        JTextField emailField = new JTextField(pessoa != null ? pessoa.getEmail() : "");
+        JTextField telefoneField = new JTextField(pessoa != null ? pessoa.getTelefone() : "");
+        JTextField enderecoField = new JTextField(pessoa != null ? pessoa.getEndereco() : "");
 
         JComboBox<String> tipoPessoaCombo = new JComboBox<>(new String[]{"FISICA", "JURIDICA"});
         if (pessoa != null && pessoa.getTipoPessoa() != null) {
@@ -38,6 +41,12 @@ public class CrudDialog {
         panel.add(ctpsField);
         panel.add(new JLabel("Data Nascimento (YYYY-MM-DD):"));
         panel.add(dataNascField);
+        panel.add(new JLabel("Email:"));
+        panel.add(emailField);
+        panel.add(new JLabel("Telefone:"));
+        panel.add(telefoneField);
+        panel.add(new JLabel("Endereço:"));
+        panel.add(enderecoField);
         panel.add(new JLabel("Tipo Pessoa:"));
         panel.add(tipoPessoaCombo);
 
@@ -52,14 +61,14 @@ public class CrudDialog {
                 }
                 novaPessoa.setNomeCompleto(nomeField.getText());
                 novaPessoa.setCpfCnpj(cpfField.getText());
-
-                String ctps = ctpsField.getText().trim();
-                if (!ctps.isEmpty()) {
-                    novaPessoa.setNumeroCtps(Long.parseLong(ctps));
+                if (!ctpsField.getText().trim().isEmpty()) {
+                    novaPessoa.setNumeroCtps(Long.parseLong(ctpsField.getText().trim()));
                 }
-
                 novaPessoa.setDataNascimento(dataNascField.getText());
                 novaPessoa.setTipoPessoa((String) tipoPessoaCombo.getSelectedItem());
+                novaPessoa.setEmail(emailField.getText());
+                novaPessoa.setTelefone(telefoneField.getText());
+                novaPessoa.setEndereco(enderecoField.getText());
                 return novaPessoa;
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(parent, "Erro ao converter número CTPS",
@@ -122,45 +131,7 @@ public class CrudDialog {
         return null;
     }
 
-    // ==================== CONTATO ====================
 
-    /**
-     * Dialog para adicionar/editar contato
-     */
-    public static com.br.pdvpostocombustivelfrontend.frontend.model.Contato showContatoDialog(JFrame parent, com.br.pdvpostocombustivelfrontend.frontend.model.Contato contato, String title) {
-        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JTextField telefoneField = new JTextField(contato != null ? contato.getTelefone() : "");
-        JTextField emailField = new JTextField(contato != null ? contato.getEmail() : "");
-        JTextField enderecoField = new JTextField(contato != null ? contato.getEndereco() : "");
-
-        JComboBox<String> tipoCombo = new JComboBox<>(new String[]{"EMAIL", "TELEFONE", "CELULAR"});
-        if (contato != null && contato.getTipoContato() != null) tipoCombo.setSelectedItem(contato.getTipoContato());
-
-        panel.add(new JLabel("Telefone:"));
-        panel.add(telefoneField);
-        panel.add(new JLabel("Email:"));
-        panel.add(emailField);
-        panel.add(new JLabel("Endereço:"));
-        panel.add(enderecoField);
-        panel.add(new JLabel("Tipo:"));
-        panel.add(tipoCombo);
-
-        int result = JOptionPane.showConfirmDialog(parent, panel, title,
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            com.br.pdvpostocombustivelfrontend.frontend.model.Contato c = new com.br.pdvpostocombustivelfrontend.frontend.model.Contato();
-            if (contato != null && contato.getId() != null) c.setId(contato.getId());
-            c.setTelefone(telefoneField.getText());
-            c.setEmail(emailField.getText());
-            c.setEndereco(enderecoField.getText());
-            c.setTipoContato((String) tipoCombo.getSelectedItem());
-            return c;
-        }
-        return null;
-    }
 
     // ==================== PRECO ====================
 
